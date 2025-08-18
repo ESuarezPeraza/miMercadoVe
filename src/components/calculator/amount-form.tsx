@@ -1,45 +1,87 @@
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { PlusCircle } from "lucide-react";
 
 interface AmountFormProps {
-    currencyLabel: string;
-    value: string;
-    onValueChange: (value: string) => void;
+    vesInput: string;
+    setVesInput: (value: string) => void;
+    usdInput: string;
+    setUsdInput: (value: string) => void;
+    description: string;
+    setDescription: (value: string) => void;
+    rateInput: string;
+    setRateInput: (value: string) => void;
     onAdd: () => void;
-    isDisabled: boolean;
-    placeholder: string;
 }
 
-export function AmountForm({ currencyLabel, value, onValueChange, onAdd, isDisabled, placeholder }: AmountFormProps) {
+export function AmountForm({ 
+    vesInput, setVesInput, 
+    usdInput, setUsdInput, 
+    description, setDescription, 
+    rateInput, setRateInput, 
+    onAdd 
+}: AmountFormProps) {
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && !isDisabled) {
+        if (e.key === 'Enter') {
             e.preventDefault();
             onAdd();
         }
     };
-
+    
     return (
-        <div className="space-y-2">
-            <Label htmlFor={currencyLabel}>{currencyLabel}</Label>
-            <div className="flex items-center space-x-2">
-                <Input
-                    id={currencyLabel}
-                    type="number"
-                    step="0.01"
-                    placeholder={placeholder}
-                    value={value}
-                    onChange={(e) => onValueChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={isDisabled}
-                    aria-label={currencyLabel}
-                />
-                <Button onClick={onAdd} disabled={isDisabled} className="whitespace-nowrap">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Añadir
-                </Button>
+        <>
+            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+                <label className="flex flex-col min-w-40 flex-1">
+                    <input
+                        placeholder="Tasa"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        value={rateInput}
+                        onChange={(e) => setRateInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        type="number"
+                        step="0.01"
+                    />
+                </label>
             </div>
-        </div>
+            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+                <label className="flex flex-col min-w-40 flex-1">
+                    <input
+                        placeholder="Descripción"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                    />
+                </label>
+            </div>
+            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+                <label className="flex flex-col min-w-40 flex-1">
+                     <input
+                        placeholder="Monto en Bs"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        value={vesInput}
+                        onChange={(e) => setVesInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        type="number"
+                        step="0.01"
+                    />
+                </label>
+                <label className="flex flex-col min-w-40 flex-1">
+                     <input
+                        placeholder="Monto en $"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        value={usdInput}
+                        onChange={(e) => setUsdInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        type="number"
+                        step="0.01"
+                    />
+                </label>
+            </div>
+             <div className="flex px-4 py-3">
+                <button onClick={onAdd} className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-[#e7edf3] text-[#0e141b] text-sm font-bold leading-normal tracking-[0.015em]">
+                    <span className="truncate">Añadir</span>
+                </button>
+            </div>
+        </>
     );
 }
