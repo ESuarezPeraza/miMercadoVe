@@ -1,6 +1,9 @@
 import { formatVes, formatUsd } from "@/lib/formatters";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 export interface Transaction {
+    id: string;
     description: string;
     ves: number;
     usd: number;
@@ -8,9 +11,10 @@ export interface Transaction {
 
 interface TransactionListProps {
     transactions: Transaction[];
+    onRemoveTransaction: (id: string) => void;
 }
 
-export function TransactionList({ transactions }: TransactionListProps) {
+export function TransactionList({ transactions, onRemoveTransaction }: TransactionListProps) {
     if (transactions.length === 0) {
         return null;
     }
@@ -21,12 +25,19 @@ export function TransactionList({ transactions }: TransactionListProps) {
                 Historial
             </h3>
             <ul className="space-y-2">
-                {transactions.map((t, index) => (
-                    <li key={index} className="flex justify-between items-center bg-[#e7edf3] p-3 rounded-lg">
-                        <span className="text-[#0e141b] text-sm">{t.description}</span>
-                        <div className="text-right">
-                             <p className="text-[#0e141b] text-sm font-semibold">{formatVes(t.ves)}</p>
-                             <p className="text-[#4e7097] text-xs">{formatUsd(t.usd)}</p>
+                {transactions.map((t) => (
+                    <li key={t.id} className="flex justify-between items-center bg-[#e7edf3] p-3 rounded-lg">
+                        <div>
+                            <span className="text-[#0e141b] text-sm">{t.description}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="text-right">
+                                <p className="text-[#0e141b] text-sm font-semibold">{formatVes(t.ves)}</p>
+                                <p className="text-[#4e7097] text-xs">{formatUsd(t.usd)}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => onRemoveTransaction(t.id)} className="text-red-500 hover:text-red-700 hover:bg-red-100">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
                         </div>
                     </li>
                 ))}

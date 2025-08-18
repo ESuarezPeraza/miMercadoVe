@@ -111,6 +111,7 @@ export function CalculatorScreen() {
         }
         
         const newTransaction: Transaction = {
+            id: Date.now().toString(),
             description: description || "Sin descripción",
             ves: vesToAdd,
             usd: usdToAdd,
@@ -134,6 +135,16 @@ export function CalculatorScreen() {
         setTransactions([]);
         setIsResetDialogOpen(false);
     };
+
+    const removeTransaction = (transactionId: string) => {
+        const transactionToRemove = transactions.find(t => t.id === transactionId);
+        if (!transactionToRemove) return;
+
+        setTotalVES(prev => parseFloat((prev - transactionToRemove.ves).toFixed(2)));
+        setTotalUSD(prev => parseFloat((prev - transactionToRemove.usd).toFixed(2)));
+        setTransactions(prev => prev.filter(t => t.id !== transactionId));
+    };
+
 
     if (!isInitialized) {
         return (
@@ -180,7 +191,7 @@ export function CalculatorScreen() {
                     setDescription={setDescription}
                     onAdd={addAmount}
                 />
-                <TransactionList transactions={transactions} />
+                <TransactionList transactions={transactions} onRemoveTransaction={removeTransaction} />
             </main>
 
             <div className="px-4 py-3">
