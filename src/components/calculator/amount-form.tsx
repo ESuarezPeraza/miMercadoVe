@@ -7,16 +7,13 @@ interface AmountFormProps {
     setUsdInput: (value: string) => void;
     description: string;
     setDescription: (value: string) => void;
-    rateInput: string;
-    setRateInput: (value: string) => void;
     onAdd: () => void;
 }
 
 export function AmountForm({ 
     vesInput, setVesInput, 
     usdInput, setUsdInput, 
-    description, setDescription, 
-    rateInput, setRateInput, 
+    description, setDescription,
     onAdd 
 }: AmountFormProps) {
 
@@ -29,19 +26,6 @@ export function AmountForm({
     
     return (
         <>
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-                <label className="flex flex-col min-w-40 flex-1">
-                    <input
-                        placeholder="Tasa"
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
-                        value={rateInput}
-                        onChange={(e) => setRateInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        type="number"
-                        step="0.01"
-                    />
-                </label>
-            </div>
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
                 <label className="flex flex-col min-w-40 flex-1">
                     <input

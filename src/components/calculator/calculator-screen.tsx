@@ -7,6 +7,14 @@ import { ResetDialog } from "./reset-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const LOCAL_STORAGE_KEY = "exchangeRate";
 
@@ -19,6 +27,7 @@ export function CalculatorScreen() {
     const [usdInput, setUsdInput] = useState("");
     const [description, setDescription] = useState("");
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+    const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
 
     const { toast } = useToast();
@@ -32,6 +41,8 @@ export function CalculatorScreen() {
                     setPersistedRate(rate);
                     setRateInput(rate.toString());
                 }
+            } else {
+                setIsRateDialogOpen(true);
             }
         } catch (error) {
             console.error("Could not read from localStorage", error);
@@ -39,8 +50,8 @@ export function CalculatorScreen() {
         setIsInitialized(true);
     }, []);
 
-    const handleSaveRate = (newRateStr: string) => {
-        const newRate = parseFloat(newRateStr);
+    const handleSaveRate = () => {
+        const newRate = parseFloat(rateInput);
         if (isNaN(newRate) || newRate <= 0) {
             toast({
                 title: "Error",
@@ -52,6 +63,7 @@ export function CalculatorScreen() {
         setPersistedRate(newRate);
         try {
             localStorage.setItem(LOCAL_STORAGE_KEY, newRate.toString());
+            setIsRateDialogOpen(false);
         } catch (error) {
              console.error("Could not write to localStorage", error);
              toast({
@@ -61,12 +73,6 @@ export function CalculatorScreen() {
             });
         }
     };
-    
-    useEffect(() => {
-        if (rateInput) {
-            handleSaveRate(rateInput);
-        }
-    }, [rateInput]);
 
     const addAmount = () => {
         if (!persistedRate) {
@@ -75,6 +81,7 @@ export function CalculatorScreen() {
                 description: "Primero debes guardar una tasa de cambio.",
                 variant: "destructive",
             });
+            setIsRateDialogOpen(true);
             return;
         }
 
@@ -144,9 +151,9 @@ export function CalculatorScreen() {
                 <div className="w-12"></div>
                 <h2 className="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Mi Mercado VE</h2>
                 <div className="flex w-auto items-center justify-end">
-                    <p className="text-[#4e7097] text-sm font-bold leading-normal tracking-[0.015em] shrink-0 whitespace-nowrap">
+                    <button onClick={() => setIsRateDialogOpen(true)} className="text-[#4e7097] text-sm font-bold leading-normal tracking-[0.015em] shrink-0 whitespace-nowrap">
                         Tasa: Bs. {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
+                    </button>
                 </div>
             </header>
             
@@ -162,8 +169,6 @@ export function CalculatorScreen() {
                     setUsdInput={setUsdInput}
                     description={description}
                     setDescription={setDescription}
-                    rateInput={rateInput}
-                    setRateInput={setRateInput}
                     onAdd={addAmount}
                 />
             </main>
@@ -182,6 +187,25 @@ export function CalculatorScreen() {
                 onOpenChange={setIsResetDialogOpen}
                 onConfirm={handleReset}
             />
+
+            <Dialog open={isRateDialogOpen} onOpenChange={persistedRate ? setIsRateDialogOpen : undefined}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Establecer Tasa de Cambio</DialogTitle>
+                    </DialogHeader>
+                    <Input
+                        type="number"
+                        placeholder="Tasa de cambio"
+                        value={rateInput}
+                        onChange={(e) => setRateInput(e.target.value)}
+                        className="form-input mt-4 flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                    />
+                    <DialogFooter>
+                        <Button onClick={handleSaveRate}>Guardar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
 
             <footer className="sticky bottom-0 bg-slate-50">
                 <div className="flex gap-2 border-t border-[#e7edf3] bg-slate-50 px-4 pb-3 pt-2">
