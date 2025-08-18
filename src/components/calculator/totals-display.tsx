@@ -1,16 +1,9 @@
+import { formatVes, formatUsd } from "@/lib/formatters";
+
 interface TotalsDisplayProps {
     totalVES: number;
     totalUSD: number;
 }
-
-const formatVes = (amount: number) => {
-    return `Bs. ${amount.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
-
-const formatUsd = (amount: number) => {
-    return `$ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
-
 
 export function TotalsDisplay({ totalVES, totalUSD }: TotalsDisplayProps) {
     return (

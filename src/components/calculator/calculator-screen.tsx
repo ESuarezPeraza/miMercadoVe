@@ -7,6 +7,7 @@ import { ResetDialog } from "./reset-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TransactionList, type Transaction } from "./transaction-list";
 import {
     Dialog,
     DialogContent,
@@ -26,6 +27,7 @@ export function CalculatorScreen() {
     const [vesInput, setVesInput] = useState("");
     const [usdInput, setUsdInput] = useState("");
     const [description, setDescription] = useState("");
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
     const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
@@ -107,7 +109,14 @@ export function CalculatorScreen() {
             usdToAdd = usdAmount;
             vesToAdd = usdAmount * persistedRate;
         }
+        
+        const newTransaction: Transaction = {
+            description: description || "Sin descripción",
+            ves: vesToAdd,
+            usd: usdToAdd,
+        };
 
+        setTransactions(prev => [newTransaction, ...prev]);
         setTotalVES(prev => parseFloat((prev + vesToAdd).toFixed(2)));
         setTotalUSD(prev => parseFloat((prev + usdToAdd).toFixed(2)));
 
@@ -122,6 +131,7 @@ export function CalculatorScreen() {
         setVesInput("");
         setUsdInput("");
         setDescription("");
+        setTransactions([]);
         setIsResetDialogOpen(false);
     };
 
@@ -171,6 +181,7 @@ export function CalculatorScreen() {
                     setDescription={setDescription}
                     onAdd={addAmount}
                 />
+                <TransactionList transactions={transactions} />
             </main>
 
             <div className="px-4 py-3">
