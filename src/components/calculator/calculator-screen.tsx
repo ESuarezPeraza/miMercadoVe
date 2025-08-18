@@ -13,9 +13,11 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Home } from "lucide-react";
 
 const LOCAL_STORAGE_KEY = "exchangeRate";
 
@@ -167,7 +169,7 @@ export function CalculatorScreen() {
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col min-h-screen">
              <header className="flex items-center bg-slate-50 p-4 pb-2 justify-between">
                 <h2 className="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-left">Mi Mercado VE</h2>
                 <div className="flex w-auto items-center justify-end">
@@ -177,7 +179,7 @@ export function CalculatorScreen() {
                 </div>
             </header>
             
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto pb-20">
                 <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Totales</h2>
                 <TotalsDisplay totalVES={totalVES} totalUSD={totalUSD} />
 
@@ -192,7 +194,7 @@ export function CalculatorScreen() {
                     onAdd={addAmount}
                 />
                 <TransactionList transactions={transactions} onRemoveTransaction={removeTransaction} />
-                 <div className="px-4 py-3">
+                 <div className="px-4 py-4">
                     <button 
                         onClick={() => setIsResetDialogOpen(true)}
                         className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-transparent text-[#0e141b] text-sm font-bold leading-normal tracking-[-0.015em] w-full"
@@ -213,6 +215,7 @@ export function CalculatorScreen() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Establecer Tasa de Cambio</DialogTitle>
+                        <DialogDescription>Introduce la tasa de cambio actual entre Bolívares y Dólares.</DialogDescription>
                     </DialogHeader>
                     <Input
                         type="number"
@@ -228,14 +231,11 @@ export function CalculatorScreen() {
             </Dialog>
 
 
-            <footer className="shrink-0">
-                <div className="flex gap-2 border-t border-[#e7edf3] bg-slate-50 px-4 pt-2 pb-safe-or-2">
-                    <a className="just flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-[#0e141b]" href="#">
-                        <div className="text-[#0e141b] flex h-8 items-center justify-center" data-icon="House" data-size="24px" data-weight="fill">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                                <path d="M224,115.55V208a16,16,0,0,1-16,16H168a16,16,0,0,1-16-16V168a8,8,0,0,0-8-8H112a8,8,0,0,0-8,8v40a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V115.55a16,16,0,0,1,5.17-11.78l80-75.48.11-.11a16,16,0,0,1,21.53,0,1.14,1.14,0,0,0,.11.11l80,75.48A16,16,0,0,1,224,115.55Z"></path>
-                            </svg>
-                        </div>
+            <footer className="fixed bottom-0 left-0 right-0 h-16 bg-slate-50 border-t border-[#e7edf3]">
+                <div className="flex h-full items-center justify-around">
+                    <a className="flex flex-col items-center justify-center gap-1 text-primary" href="#">
+                        <Home className="h-6 w-6" />
+                        <span className="text-xs font-medium">Inicio</span>
                     </a>
                 </div>
             </footer>
