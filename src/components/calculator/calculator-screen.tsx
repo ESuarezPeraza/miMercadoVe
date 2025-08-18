@@ -177,7 +177,7 @@ export function CalculatorScreen() {
                 </div>
             </header>
             
-            <main className="flex-1">
+            <main className="flex-1 overflow-y-auto">
                 <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Totales</h2>
                 <TotalsDisplay totalVES={totalVES} totalUSD={totalUSD} />
 
@@ -192,16 +192,16 @@ export function CalculatorScreen() {
                     onAdd={addAmount}
                 />
                 <TransactionList transactions={transactions} onRemoveTransaction={removeTransaction} />
+                 <div className="px-4 py-3">
+                    <button 
+                        onClick={() => setIsResetDialogOpen(true)}
+                        className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-transparent text-[#0e141b] text-sm font-bold leading-normal tracking-[-0.015em] w-full"
+                    >
+                        <span className="truncate">Resetear</span>
+                    </button>
+                </div>
             </main>
 
-            <div className="px-4 py-3">
-                <button 
-                    onClick={() => setIsResetDialogOpen(true)}
-                    className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-transparent text-[#0e141b] text-sm font-bold leading-normal tracking-[0.015em] w-full"
-                >
-                    <span className="truncate">Resetear</span>
-                </button>
-            </div>
             
             <ResetDialog
                 isOpen={isResetDialogOpen}
@@ -228,8 +228,8 @@ export function CalculatorScreen() {
             </Dialog>
 
 
-            <footer>
-                <div className="flex gap-2 border-t border-[#e7edf3] bg-slate-50 px-4 pb-safe-or-4 pt-2">
+            <footer className="shrink-0">
+                <div className="flex gap-2 border-t border-[#e7edf3] bg-slate-50 px-4 pt-2 pb-safe-or-2">
                     <a className="just flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-[#0e141b]" href="#">
                         <div className="text-[#0e141b] flex h-8 items-center justify-center" data-icon="House" data-size="24px" data-weight="fill">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
