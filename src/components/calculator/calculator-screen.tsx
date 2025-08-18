@@ -167,7 +167,7 @@ export function CalculatorScreen() {
     }
 
     return (
-        <div className="flex-1">
+        <div className="flex flex-col h-full">
              <header className="flex items-center bg-slate-50 p-4 pb-2 justify-between">
                 <h2 className="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-left">Mi Mercado VE</h2>
                 <div className="flex w-auto items-center justify-end">
@@ -177,7 +177,7 @@ export function CalculatorScreen() {
                 </div>
             </header>
             
-            <main>
+            <main className="flex-1">
                 <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Totales</h2>
                 <TotalsDisplay totalVES={totalVES} totalUSD={totalUSD} />
 
@@ -228,8 +228,8 @@ export function CalculatorScreen() {
             </Dialog>
 
 
-            <footer className="sticky bottom-0 bg-slate-50">
-                <div className="flex gap-2 border-t border-[#e7edf3] bg-slate-50 px-4 pb-3 pt-2">
+            <footer>
+                <div className="flex gap-2 border-t border-[#e7edf3] bg-slate-50 px-4 pb-safe-or-4 pt-2">
                     <a className="just flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-[#0e141b]" href="#">
                         <div className="text-[#0e141b] flex h-8 items-center justify-center" data-icon="House" data-size="24px" data-weight="fill">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
@@ -238,7 +238,6 @@ export function CalculatorScreen() {
                         </div>
                     </a>
                 </div>
-                <div className="h-5 bg-slate-50"></div>
             </footer>
         </div>
     );

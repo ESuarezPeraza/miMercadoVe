@@ -86,3 +86,10 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .pb-safe-or-4 {
+    padding-bottom: 1rem; /* 16px */
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+}
