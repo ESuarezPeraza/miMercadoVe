@@ -47,22 +47,20 @@ export function AmountForm({
                         onKeyDown={handleKeyDown}
                     />
                 </label>
-                <div className="flex items-center">
-                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} className="rounded-r-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14 w-14">
+                <div className="flex items-center bg-[#e7edf3] rounded-lg h-14">
+                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} className="h-full hover:bg-[#dbe1e8]">
                         <Minus className="h-4 w-4" />
                     </Button>
-                    <label className="flex flex-col w-20">
-                        <input
-                            placeholder="Cant."
-                            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
-                            onKeyDown={handleKeyDown}
-                            type="text"
-                            pattern="[0-9]*"
-                        />
-                    </label>
-                     <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)} className="rounded-l-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14 w-14">
+                    <input
+                        placeholder="Cant."
+                        className="form-input w-20 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
+                        onKeyDown={handleKeyDown}
+                        type="text"
+                        pattern="[0-9]*"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)} className="h-full hover:bg-[#dbe1e8]">
                         <Plus className="h-4 w-4" />
                     </Button>
                 </div>
