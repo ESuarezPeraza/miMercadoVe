@@ -16,9 +16,10 @@ export interface Transaction {
 interface TransactionListProps {
     transactions: Transaction[];
     onRemoveTransaction: (id: string) => void;
+    onEditTransaction: (transaction: Transaction) => void;
 }
 
-export function TransactionList({ transactions, onRemoveTransaction }: TransactionListProps) {
+export function TransactionList({ transactions, onRemoveTransaction, onEditTransaction }: TransactionListProps) {
     if (transactions.length === 0) {
         return null;
     }
@@ -30,7 +31,7 @@ export function TransactionList({ transactions, onRemoveTransaction }: Transacti
             </h3>
             <ul className="space-y-2">
                 {transactions.map((t) => (
-                    <li key={t.id} className="flex justify-between items-center bg-[#e7edf3] p-3 rounded-lg">
+                    <li key={t.id} className="flex justify-between items-center bg-[#e7edf3] p-3 rounded-lg cursor-pointer" onClick={() => onEditTransaction(t)}>
                         <div>
                             <p className="text-[#0e141b] text-sm font-semibold">{t.description}</p>
                             <p className="text-[#4e7097] text-xs">
@@ -42,7 +43,15 @@ export function TransactionList({ transactions, onRemoveTransaction }: Transacti
                                 <p className="text-[#0e141b] text-sm font-semibold">{formatVes(t.ves.toNumber())}</p>
                                 <p className="text-[#4e7097] text-xs">{formatUsd(t.usd.toNumber())}</p>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={() => onRemoveTransaction(t.id)} className="text-red-500 hover:text-red-700 hover:bg-red-100">
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Evita que se dispare el onClick de la <li>
+                                    onRemoveTransaction(t.id);
+                                }} 
+                                className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                            >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>

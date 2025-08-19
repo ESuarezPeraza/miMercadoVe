@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransactionList, type Transaction } from "./transaction-list";
+import { EditTransactionDialog } from "./edit-transaction-dialog";
 import {
     Dialog,
     DialogContent,
@@ -35,6 +36,7 @@ export function CalculatorScreen() {
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
     const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
     const { toast } = useToast();
 
@@ -177,6 +179,71 @@ export function CalculatorScreen() {
         setTransactions(prev => prev.filter(t => t.id !== transactionId));
     };
 
+    const handleEditTransaction = (transaction: Transaction) => {
+        setEditingTransaction(transaction);
+    };
+
+    const handleUpdateTransaction = (
+        id: string,
+        newDescription: string,
+        newQuantity: string,
+        newPrice: string,
+        priceCurrency: 'ves' | 'usd'
+    ) => {
+        if (!persistedRate) return;
+
+        const qty = parseInt(newQuantity, 10);
+        if (isNaN(qty) || qty <= 0) {
+            toast({ title: "Error", description: "Cantidad inválida.", variant: "destructive" });
+            return;
+        }
+
+        let price: Big;
+        try {
+            price = new Big(newPrice);
+            if (price.lte(0)) throw new Error();
+        } catch (e) {
+            toast({ title: "Error", description: "Precio inválido.", variant: "destructive" });
+            return;
+        }
+        
+        let unitVes: Big;
+        let unitUsd: Big;
+
+        if(priceCurrency === 'ves') {
+            unitVes = price;
+            unitUsd = price.div(persistedRate);
+        } else {
+            unitUsd = price;
+            unitVes = price.times(persistedRate);
+        }
+
+        const updatedTransactions = transactions.map(t => {
+            if (t.id === id) {
+                return {
+                    ...t,
+                    description: newDescription,
+                    quantity: qty,
+                    unitVes,
+                    unitUsd,
+                    ves: unitVes.times(qty),
+                    usd: unitUsd.times(qty),
+                };
+            }
+            return t;
+        });
+
+        setTransactions(updatedTransactions);
+        
+        // Recalculate totals
+        const newTotalVES = updatedTransactions.reduce((acc, t) => acc.plus(t.ves), new Big(0));
+        const newTotalUSD = updatedTransactions.reduce((acc, t) => acc.plus(t.usd), new Big(0));
+        setTotalVES(newTotalVES);
+        setTotalUSD(newTotalUSD);
+
+        setEditingTransaction(null);
+    };
+
 
     if (!isInitialized) {
         return (
@@ -225,7 +292,11 @@ export function CalculatorScreen() {
                     setQuantity={setQuantity}
                     onAdd={addAmount}
                 />
-                <TransactionList transactions={transactions} onRemoveTransaction={removeTransaction} />
+                <TransactionList 
+                    transactions={transactions} 
+                    onRemoveTransaction={removeTransaction}
+                    onEditTransaction={handleEditTransaction}
+                />
                  <div className="px-4 py-4">
                     <button 
                         onClick={() => setIsResetDialogOpen(true)}
@@ -262,6 +333,13 @@ export function CalculatorScreen() {
                 </DialogContent>
             </Dialog>
 
+            {editingTransaction && (
+                <EditTransactionDialog
+                    transaction={editingTransaction}
+                    onSave={handleUpdateTransaction}
+                    onClose={() => setEditingTransaction(null)}
+                />
+            )}
 
             <footer className="fixed bottom-0 left-0 right-0 h-16 bg-slate-50 border-t border-[#e7edf3]">
                 <div className="flex h-full items-center justify-around">
