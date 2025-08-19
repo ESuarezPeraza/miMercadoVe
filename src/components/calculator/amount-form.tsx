@@ -1,4 +1,6 @@
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Minus, Plus } from "lucide-react";
 
 interface AmountFormProps {
     vesInput: string;
@@ -26,6 +28,12 @@ export function AmountForm({
             onAdd();
         }
     };
+
+    const handleQuantityChange = (amount: number) => {
+        const currentQuantity = parseInt(quantity, 10) || 0;
+        const newQuantity = Math.max(1, currentQuantity + amount);
+        setQuantity(newQuantity.toString());
+    };
     
     return (
         <>
@@ -39,17 +47,25 @@ export function AmountForm({
                         onKeyDown={handleKeyDown}
                     />
                 </label>
-                <label className="flex flex-col w-24">
-                    <input
-                        placeholder="Cant."
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        type="number"
-                        step="1"
-                    />
-                </label>
+                <div className="flex items-center">
+                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} className="rounded-r-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14">
+                        <Minus className="h-4 w-4" />
+                    </Button>
+                    <label className="flex flex-col w-20">
+                        <input
+                            placeholder="Cant."
+                            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
+                            onKeyDown={handleKeyDown}
+                            type="text"
+                            pattern="[0-9]*"
+                        />
+                    </label>
+                     <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)} className="rounded-l-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14">
+                        <Plus className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
                 <label className="flex flex-col min-w-40 flex-1">
