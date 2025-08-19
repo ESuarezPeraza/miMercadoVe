@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Big from "big.js";
 import { TotalsDisplay } from "./totals-display";
 import { AmountForm } from "./amount-form";
 import { ResetDialog } from "./reset-dialog";
@@ -23,9 +24,9 @@ const LOCAL_STORAGE_KEY = "exchangeRate";
 
 export function CalculatorScreen() {
     const [rateInput, setRateInput] = useState("");
-    const [persistedRate, setPersistedRate] = useState<number | null>(null);
-    const [totalVES, setTotalVES] = useState(0);
-    const [totalUSD, setTotalUSD] = useState(0);
+    const [persistedRate, setPersistedRate] = useState<Big | null>(null);
+    const [totalVES, setTotalVES] = useState(new Big(0));
+    const [totalUSD, setTotalUSD] = useState(new Big(0));
     const [vesInput, setVesInput] = useState("");
     const [usdInput, setUsdInput] = useState("");
     const [description, setDescription] = useState("");
@@ -41,8 +42,8 @@ export function CalculatorScreen() {
         try {
             const savedRate = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (savedRate) {
-                const rate = parseFloat(savedRate);
-                if (!isNaN(rate) && rate > 0) {
+                const rate = new Big(savedRate);
+                if (rate.gt(0)) {
                     setPersistedRate(rate);
                     setRateInput(rate.toString());
                 }
@@ -56,24 +57,24 @@ export function CalculatorScreen() {
     }, []);
 
     const handleSaveRate = () => {
-        const newRate = parseFloat(rateInput);
-        if (isNaN(newRate) || newRate <= 0) {
-            toast({
-                title: "Error",
-                description: "Por favor, introduce una tasa de cambio válida y positiva.",
-                variant: "destructive",
-            });
-            return;
-        }
-        setPersistedRate(newRate);
         try {
+            const newRate = new Big(rateInput);
+            if (newRate.lte(0)) {
+                toast({
+                    title: "Error",
+                    description: "Por favor, introduce una tasa de cambio válida y positiva.",
+                    variant: "destructive",
+                });
+                return;
+            }
+            setPersistedRate(newRate);
             localStorage.setItem(LOCAL_STORAGE_KEY, newRate.toString());
             setIsRateDialogOpen(false);
         } catch (error) {
-             console.error("Could not write to localStorage", error);
+             console.error("Could not write to localStorage or invalid Big number", error);
              toast({
                 title: "Error",
-                description: "No se pudo guardar la tasa de cambio.",
+                description: "No se pudo guardar la tasa de cambio. Introduce un número válido.",
                 variant: "destructive",
             });
         }
@@ -90,11 +91,8 @@ export function CalculatorScreen() {
             return;
         }
 
-        const vesAmount = parseFloat(vesInput);
-        const usdAmount = parseFloat(usdInput);
         const qty = parseInt(quantity, 10);
-
-        if(isNaN(qty) || qty <= 0) {
+         if(isNaN(qty) || qty <= 0) {
             toast({
                 title: "Error",
                 description: "Por favor, introduce una cantidad válida.",
@@ -102,8 +100,19 @@ export function CalculatorScreen() {
             });
             return;
         }
+        
+        let vesAmount: Big | null = null;
+        try {
+            if (vesInput) vesAmount = new Big(vesInput);
+        } catch (e) { /* ignore */ }
+        
+        let usdAmount: Big | null = null;
+        try {
+            if (usdInput) usdAmount = new Big(usdInput);
+        } catch (e) { /* ignore */ }
 
-        if ((isNaN(vesAmount) || vesAmount <= 0) && (isNaN(usdAmount) || usdAmount <= 0)) {
+
+        if ((!vesAmount || vesAmount.lte(0)) && (!usdAmount || usdAmount.lte(0))) {
              toast({
                 title: "Error",
                 description: "Por favor, introduce un monto válido en Bolívares o Dólares.",
@@ -112,21 +121,21 @@ export function CalculatorScreen() {
             return;
         }
 
-        let vesToAdd = 0;
-        let usdToAdd = 0;
-        let unitVes = 0;
-        let unitUsd = 0;
+        let unitVes: Big;
+        let unitUsd: Big;
 
-        if (!isNaN(vesAmount) && vesAmount > 0) {
+        if (vesAmount && vesAmount.gt(0)) {
             unitVes = vesAmount;
-            unitUsd = vesAmount / persistedRate;
-        } else if (!isNaN(usdAmount) && usdAmount > 0) {
+            unitUsd = vesAmount.div(persistedRate);
+        } else if (usdAmount && usdAmount.gt(0)) {
             unitUsd = usdAmount;
-            unitVes = usdAmount * persistedRate;
+            unitVes = usdAmount.times(persistedRate);
+        } else {
+             return; // Should have been caught by the check above
         }
         
-        vesToAdd = unitVes * qty;
-        usdToAdd = unitUsd * qty;
+        const vesToAdd = unitVes.times(qty);
+        const usdToAdd = unitUsd.times(qty);
 
         const newTransaction: Transaction = {
             id: Date.now().toString(),
@@ -139,8 +148,8 @@ export function CalculatorScreen() {
         };
 
         setTransactions(prev => [newTransaction, ...prev]);
-        setTotalVES(prev => parseFloat((prev + vesToAdd).toFixed(2)));
-        setTotalUSD(prev => parseFloat((prev + usdToAdd).toFixed(2)));
+        setTotalVES(prev => prev.plus(vesToAdd));
+        setTotalUSD(prev => prev.plus(usdToAdd));
 
         setVesInput("");
         setUsdInput("");
@@ -149,8 +158,8 @@ export function CalculatorScreen() {
     };
 
     const handleReset = () => {
-        setTotalVES(0);
-        setTotalUSD(0);
+        setTotalVES(new Big(0));
+        setTotalUSD(new Big(0));
         setVesInput("");
         setUsdInput("");
         setDescription("");
@@ -163,8 +172,8 @@ export function CalculatorScreen() {
         const transactionToRemove = transactions.find(t => t.id === transactionId);
         if (!transactionToRemove) return;
 
-        setTotalVES(prev => parseFloat((prev - transactionToRemove.ves).toFixed(2)));
-        setTotalUSD(prev => parseFloat((prev - transactionToRemove.usd).toFixed(2)));
+        setTotalVES(prev => prev.minus(transactionToRemove.ves));
+        setTotalUSD(prev => prev.minus(transactionToRemove.usd));
         setTransactions(prev => prev.filter(t => t.id !== transactionId));
     };
 
@@ -202,7 +211,7 @@ export function CalculatorScreen() {
             
             <main className="flex-1 overflow-y-auto pb-20">
                 <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Totales</h2>
-                <TotalsDisplay totalVES={totalVES} totalUSD={totalUSD} />
+                <TotalsDisplay totalVES={totalVES.toNumber()} totalUSD={totalUSD.toNumber()} />
 
                 <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Producto</h2>
                 <AmountForm 
