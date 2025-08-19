@@ -19,7 +19,7 @@ export function Toaster() {
       {toasts.map(function ({ id, title, description, action, variant, ...props }) {
         return (
           <Toast key={id} variant={variant} {...props}>
-            {variant === 'destructive' && <AlertTriangle className="h-6 w-6 text-destructive" />}
+            {variant === 'destructive' && <AlertTriangle className="h-6 w-6 text-destructive-foreground" />}
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && (
