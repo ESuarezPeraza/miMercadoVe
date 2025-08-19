@@ -204,7 +204,7 @@ export function CalculatorScreen() {
                 <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Totales</h2>
                 <TotalsDisplay totalVES={totalVES} totalUSD={totalUSD} />
 
-                <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Montos</h2>
+                <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Producto</h2>
                 <AmountForm 
                     vesInput={vesInput}
                     setVesInput={setVesInput}
