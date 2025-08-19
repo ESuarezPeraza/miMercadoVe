@@ -38,7 +38,7 @@ export function AmountForm({
     return (
         <>
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-                <label className="flex flex-col min-w-40 flex-1">
+                <label className="flex flex-col flex-1">
                     <input
                         placeholder="Descripción"
                         className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
@@ -53,7 +53,7 @@ export function AmountForm({
                     </Button>
                     <input
                         placeholder="Cant."
-                        className="form-input w-20 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
+                        className="form-input w-12 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
                         onKeyDown={handleKeyDown}
