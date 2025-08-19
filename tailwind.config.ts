@@ -43,7 +43,7 @@ export default {
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--foreground))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -88,15 +88,10 @@ export default {
             height: '0',
           },
         },
-        'animated-border': {
-            '0%, 100%': { backgroundPosition: '0% 50%' },
-            '50%': { backgroundPosition: '100% 50%' },
-        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'animated-border': 'animated-border 3s ease infinite',
       },
     },
   },
