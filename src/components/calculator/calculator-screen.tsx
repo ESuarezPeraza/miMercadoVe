@@ -192,7 +192,7 @@ export function CalculatorScreen() {
     return (
         <div className="flex flex-col min-h-screen">
              <header className="flex items-center bg-slate-50 p-4 pb-2 justify-between">
-                <h2 className="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-left">Mi Mercado VE</h2>
+                <h2 className="text-[#0e141b] text-2xl font-bold leading-tight tracking-[-0.015em] flex-1 text-left">Mi Mercado VE</h2>
                 <div className="flex w-auto items-center justify-end">
                     <button onClick={() => setIsRateDialogOpen(true)} className="text-[#4e7097] text-sm font-bold leading-normal tracking-[0.015em] shrink-0 whitespace-nowrap">
                         Tasa: {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
