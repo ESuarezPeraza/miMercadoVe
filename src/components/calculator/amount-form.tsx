@@ -7,6 +7,8 @@ interface AmountFormProps {
     setUsdInput: (value: string) => void;
     description: string;
     setDescription: (value: string) => void;
+    quantity: string;
+    setQuantity: (value: string) => void;
     onAdd: () => void;
 }
 
@@ -14,6 +16,7 @@ export function AmountForm({
     vesInput, setVesInput, 
     usdInput, setUsdInput, 
     description, setDescription,
+    quantity, setQuantity,
     onAdd 
 }: AmountFormProps) {
 
@@ -36,11 +39,22 @@ export function AmountForm({
                         onKeyDown={handleKeyDown}
                     />
                 </label>
+                <label className="flex flex-col w-24">
+                    <input
+                        placeholder="Cant."
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        type="number"
+                        step="1"
+                    />
+                </label>
             </div>
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
                 <label className="flex flex-col min-w-40 flex-1">
                      <input
-                        placeholder="Monto en Bs"
+                        placeholder="Precio en Bs"
                         className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                         value={vesInput}
                         onChange={(e) => setVesInput(e.target.value)}
@@ -51,7 +65,7 @@ export function AmountForm({
                 </label>
                 <label className="flex flex-col min-w-40 flex-1">
                      <input
-                        placeholder="Monto en $"
+                        placeholder="Precio en $"
                         className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                         value={usdInput}
                         onChange={(e) => setUsdInput(e.target.value)}

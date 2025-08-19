@@ -7,6 +7,9 @@ export interface Transaction {
     description: string;
     ves: number;
     usd: number;
+    quantity: number;
+    unitVes: number;
+    unitUsd: number;
 }
 
 interface TransactionListProps {
@@ -28,7 +31,10 @@ export function TransactionList({ transactions, onRemoveTransaction }: Transacti
                 {transactions.map((t) => (
                     <li key={t.id} className="flex justify-between items-center bg-[#e7edf3] p-3 rounded-lg">
                         <div>
-                            <span className="text-[#0e141b] text-sm">{t.description}</span>
+                            <p className="text-[#0e141b] text-sm font-semibold">{t.description}</p>
+                            <p className="text-[#4e7097] text-xs">
+                                {t.quantity} x {formatVes(t.unitVes)} / {formatUsd(t.unitUsd)}
+                            </p>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="text-right">

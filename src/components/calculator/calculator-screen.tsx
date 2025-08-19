@@ -29,6 +29,7 @@ export function CalculatorScreen() {
     const [vesInput, setVesInput] = useState("");
     const [usdInput, setUsdInput] = useState("");
     const [description, setDescription] = useState("");
+    const [quantity, setQuantity] = useState("1");
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
     const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
@@ -91,6 +92,16 @@ export function CalculatorScreen() {
 
         const vesAmount = parseFloat(vesInput);
         const usdAmount = parseFloat(usdInput);
+        const qty = parseInt(quantity, 10);
+
+        if(isNaN(qty) || qty <= 0) {
+            toast({
+                title: "Error",
+                description: "Por favor, introduce una cantidad válida.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         if ((isNaN(vesAmount) || vesAmount <= 0) && (isNaN(usdAmount) || usdAmount <= 0)) {
              toast({
@@ -103,20 +114,28 @@ export function CalculatorScreen() {
 
         let vesToAdd = 0;
         let usdToAdd = 0;
+        let unitVes = 0;
+        let unitUsd = 0;
 
         if (!isNaN(vesAmount) && vesAmount > 0) {
-            vesToAdd = vesAmount;
-            usdToAdd = vesAmount / persistedRate;
+            unitVes = vesAmount;
+            unitUsd = vesAmount / persistedRate;
         } else if (!isNaN(usdAmount) && usdAmount > 0) {
-            usdToAdd = usdAmount;
-            vesToAdd = usdAmount * persistedRate;
+            unitUsd = usdAmount;
+            unitVes = usdAmount * persistedRate;
         }
         
+        vesToAdd = unitVes * qty;
+        usdToAdd = unitUsd * qty;
+
         const newTransaction: Transaction = {
             id: Date.now().toString(),
             description: description || "Sin descripción",
             ves: vesToAdd,
             usd: usdToAdd,
+            quantity: qty,
+            unitVes: unitVes,
+            unitUsd: unitUsd
         };
 
         setTransactions(prev => [newTransaction, ...prev]);
@@ -126,6 +145,7 @@ export function CalculatorScreen() {
         setVesInput("");
         setUsdInput("");
         setDescription("");
+        setQuantity("1");
     };
 
     const handleReset = () => {
@@ -134,6 +154,7 @@ export function CalculatorScreen() {
         setVesInput("");
         setUsdInput("");
         setDescription("");
+        setQuantity("1");
         setTransactions([]);
         setIsResetDialogOpen(false);
     };
@@ -174,7 +195,7 @@ export function CalculatorScreen() {
                 <h2 className="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-left">Mi Mercado VE</h2>
                 <div className="flex w-auto items-center justify-end">
                     <button onClick={() => setIsRateDialogOpen(true)} className="text-[#4e7097] text-sm font-bold leading-normal tracking-[0.015em] shrink-0 whitespace-nowrap">
-                        Tasa: Bs. {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        Tasa: {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </button>
                 </div>
             </header>
@@ -191,13 +212,15 @@ export function CalculatorScreen() {
                     setUsdInput={setUsdInput}
                     description={description}
                     setDescription={setDescription}
+                    quantity={quantity}
+                    setQuantity={setQuantity}
                     onAdd={addAmount}
                 />
                 <TransactionList transactions={transactions} onRemoveTransaction={removeTransaction} />
                  <div className="px-4 py-4">
                     <button 
                         onClick={() => setIsResetDialogOpen(true)}
-                        className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-transparent text-[#0e141b] text-sm font-bold leading-normal tracking-[-0.015em] w-full"
+                        className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-transparent text-[#0e141b] text-sm font-bold leading-normal tracking-[0.015em] w-full"
                     >
                         <span className="truncate">Resetear</span>
                     </button>
