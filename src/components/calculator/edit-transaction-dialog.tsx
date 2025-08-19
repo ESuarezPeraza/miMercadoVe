@@ -4,13 +4,14 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
     DialogClose,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Transaction } from './transaction-list';
 
 interface EditTransactionDialogProps {
@@ -45,55 +46,77 @@ export function EditTransactionDialog({ transaction, onSave, onClose }: EditTran
         onSave(transaction.id, description, quantity, price, priceCurrency);
     };
 
+    const handleCurrencyChange = (value: string) => {
+        setPriceCurrency(value as 'ves' | 'usd');
+    };
+
     return (
         <Dialog open={!!transaction} onOpenChange={(isOpen) => !isOpen && onClose()}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Editar Producto</DialogTitle>
+                    <DialogDescription>
+                        Modifica los detalles del producto. Haz clic en "Guardar Cambios" cuando termines.
+                    </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                     <div className="space-y-2">
-                        <Label htmlFor="description">Descripción</Label>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="description" className="text-right">
+                            Descripción
+                        </Label>
                         <Input
                             id="description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            className="col-span-3 h-10 bg-[#e7edf3] border-none"
                         />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="quantity">Cantidad</Label>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="quantity" className="text-right">
+                            Cantidad
+                        </Label>
                         <Input
                             id="quantity"
                             type="number"
                             value={quantity}
                             onChange={(e) => setQuantity(e.target.value)}
-                             className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            className="col-span-3 h-10 bg-[#e7edf3] border-none"
                         />
                     </div>
-                     <div className="space-y-2">
-                        <Label>Moneda del Precio</Label>
-                        <RadioGroup defaultValue="ves" onValueChange={(value: 'ves' | 'usd') => setPriceCurrency(value)} className="flex gap-4">
-                            <div>
-                                <RadioGroupItem value="ves" id="ves" />
-                                <Label htmlFor="ves" className="pl-2">Bolívares</Label>
+                    <Tabs value={priceCurrency} onValueChange={handleCurrencyChange} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="ves">Bolívares (Bs.)</TabsTrigger>
+                            <TabsTrigger value="usd">Dólares ($)</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="ves">
+                            <div className="grid grid-cols-4 items-center gap-4 pt-4">
+                                 <Label htmlFor="price-ves" className="text-right">
+                                    Precio
+                                </Label>
+                                <Input
+                                    id="price-ves"
+                                    type="number"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    className="col-span-3 h-10 bg-[#e7edf3] border-none"
+                                />
                             </div>
-                             <div>
-                                <RadioGroupItem value="usd" id="usd" />
-                                <Label htmlFor="usd" className="pl-2">Dólares</Label>
+                        </TabsContent>
+                         <TabsContent value="usd">
+                            <div className="grid grid-cols-4 items-center gap-4 pt-4">
+                                <Label htmlFor="price-usd" className="text-right">
+                                    Precio
+                                </Label>
+                                <Input
+                                    id="price-usd"
+                                    type="number"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    className="col-span-3 h-10 bg-[#e7edf3] border-none"
+                                />
                             </div>
-                        </RadioGroup>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="price">Precio Unitario</Label>
-                        <Input
-                            id="price"
-                            type="number"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                             className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
-                        />
-                    </div>
+                        </TabsContent>
+                    </Tabs>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
