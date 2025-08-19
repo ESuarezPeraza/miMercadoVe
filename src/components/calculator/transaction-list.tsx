@@ -26,7 +26,7 @@ export function TransactionList({ transactions, onRemoveTransaction }: Transacti
     return (
         <div className="px-4 py-3">
              <h3 className="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] pb-2">
-                Historial
+                Carrito
             </h3>
             <ul className="space-y-2">
                 {transactions.map((t) => (
