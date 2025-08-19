@@ -118,7 +118,7 @@ export function EditTransactionDialog({ transaction, onSave, onClose }: EditTran
                         </TabsContent>
                     </Tabs>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="sm:justify-end sm:space-x-2">
                     <DialogClose asChild>
                         <Button type="button" variant="secondary">
                             Cancelar
