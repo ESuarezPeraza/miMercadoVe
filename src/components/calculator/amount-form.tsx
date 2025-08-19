@@ -48,7 +48,7 @@ export function AmountForm({
                     />
                 </label>
                 <div className="flex items-center">
-                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} className="rounded-r-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14">
+                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} className="rounded-r-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14 w-14">
                         <Minus className="h-4 w-4" />
                     </Button>
                     <label className="flex flex-col w-20">
@@ -62,7 +62,7 @@ export function AmountForm({
                             pattern="[0-9]*"
                         />
                     </label>
-                     <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)} className="rounded-l-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14">
+                     <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)} className="rounded-l-none bg-[#e7edf3] hover:bg-[#dbe1e8] h-14 w-14">
                         <Plus className="h-4 w-4" />
                     </Button>
                 </div>
