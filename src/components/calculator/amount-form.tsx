@@ -48,16 +48,16 @@ export function AmountForm({
                 <label className="flex flex-col flex-1">
                     <input
                         placeholder="Descripción"
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
                 </label>
-                 {!isWeightBased ? (
+                {!isWeightBased ? (
                     <label className="flex flex-col">
                         <div className="flex items-center bg-[#e7edf3] rounded-lg h-14">
-                            <button onClick={() => handleQuantityChange(-1)} className="flex items-center justify-center w-10 h-full text-[#4e7097] hover:text-[#0e141b]">
+                            <button onClick={() => handleQuantityChange(-1)} className="flex items-center justify-center w-10 text-[#4e7097] hover:text-[#0e141b] h-full">
                                 <Minus className="h-4 w-4" />
                             </button>
                             <input
@@ -69,7 +69,7 @@ export function AmountForm({
                                 type="text"
                                 pattern="[0-9]*"
                             />
-                            <button onClick={() => handleQuantityChange(1)} className="flex items-center justify-center w-10 h-full text-[#4e7097] hover:text-[#0e141b]">
+                            <button onClick={() => handleQuantityChange(1)} className="flex items-center justify-center w-10 text-[#4e7097] hover:text-[#0e141b] h-full">
                                 <Plus className="h-4 w-4" />
                             </button>
                         </div>
