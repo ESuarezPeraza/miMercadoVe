@@ -78,7 +78,7 @@ export function AmountForm({
                     <label className="flex flex-col">
                          <input
                             placeholder="Peso (kg)"
-                            className="form-input flex w-28 min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            className="form-input flex w-32 min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                             value={weight}
                             onChange={(e) => setWeight(e.target.value)}
                             onKeyDown={handleKeyDown}
