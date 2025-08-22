@@ -55,23 +55,25 @@ export function AmountForm({
                     />
                 </label>
                  {!isWeightBased ? (
-                    <div className="flex items-center bg-[#e7edf3] rounded-lg h-14">
-                        <button onClick={() => handleQuantityChange(-1)} className="flex items-center justify-center w-14 h-full text-[#4e7097] hover:text-[#0e141b]">
-                            <Minus className="h-4 w-4" />
-                        </button>
-                        <input
-                            placeholder="Cant."
-                            className="form-input w-12 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
-                            onKeyDown={handleKeyDown}
-                            type="text"
-                            pattern="[0-9]*"
-                        />
-                        <button onClick={() => handleQuantityChange(1)} className="flex items-center justify-center w-14 h-full text-[#4e7097] hover:text-[#0e141b]">
-                            <Plus className="h-4 w-4" />
-                        </button>
-                    </div>
+                    <label className="flex flex-col">
+                        <div className="flex items-center bg-[#e7edf3] rounded-lg h-14">
+                            <button onClick={() => handleQuantityChange(-1)} className="flex items-center justify-center w-14 h-full text-[#4e7097] hover:text-[#0e141b]">
+                                <Minus className="h-4 w-4" />
+                            </button>
+                            <input
+                                placeholder="Cant."
+                                className="form-input w-12 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
+                                value={quantity}
+                                onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
+                                onKeyDown={handleKeyDown}
+                                type="text"
+                                pattern="[0-9]*"
+                            />
+                            <button onClick={() => handleQuantityChange(1)} className="flex items-center justify-center w-14 h-full text-[#4e7097] hover:text-[#0e141b]">
+                                <Plus className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </label>
                  ) : (
                     <label className="flex flex-col">
                          <input
