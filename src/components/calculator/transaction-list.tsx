@@ -33,7 +33,7 @@ export function TransactionList({ transactions, onRemoveTransaction, onEditTrans
 
     const renderSubtext = (t: Transaction) => {
         if (t.isWeightBased && t.weight && t.pricePerKgVes && t.pricePerKgUsd) {
-            return `${t.weight.toString()} kg @ ${formatVes(t.pricePerKgVes.toNumber())}/kg`;
+            return `${t.weight.toString()} kg | ${formatVes(t.pricePerKgVes.toNumber())}/kg`;
         }
         if (!t.isWeightBased && t.quantity && t.unitVes && t.unitUsd) {
             return `${t.quantity} x ${formatVes(t.unitVes.toNumber())} / ${formatUsd(t.unitUsd.toNumber())}`;
