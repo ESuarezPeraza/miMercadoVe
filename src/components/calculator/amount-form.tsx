@@ -92,7 +92,7 @@ export function AmountForm({
                 <label className="flex flex-col min-w-40 flex-1">
                      <input
                         placeholder={isWeightBased ? "Precio por kg (Bs)" : "Precio en Bs"}
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                         value={vesInput}
                         onChange={(e) => setVesInput(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -103,7 +103,7 @@ export function AmountForm({
                 <label className="flex flex-col min-w-40 flex-1">
                      <input
                         placeholder={isWeightBased ? "Precio por kg ($)" : "Precio en $"}
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                         value={usdInput}
                         onChange={(e) => setUsdInput(e.target.value)}
                         onKeyDown={handleKeyDown}
