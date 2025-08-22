@@ -8,10 +8,17 @@ export interface Transaction {
     description: string;
     ves: Big;
     usd: Big;
-    quantity: number;
-    unitVes: Big;
-    unitUsd: Big;
+    isWeightBased: boolean;
+    // For unit-based
+    quantity?: number;
+    unitVes?: Big;
+    unitUsd?: Big;
+    // For weight-based
+    weight?: Big; 
+    pricePerKgVes?: Big;
+    pricePerKgUsd?: Big;
 }
+
 
 interface TransactionListProps {
     transactions: Transaction[];
@@ -22,6 +29,16 @@ interface TransactionListProps {
 export function TransactionList({ transactions, onRemoveTransaction, onEditTransaction }: TransactionListProps) {
     if (transactions.length === 0) {
         return null;
+    }
+
+    const renderSubtext = (t: Transaction) => {
+        if (t.isWeightBased && t.weight && t.pricePerKgVes && t.pricePerKgUsd) {
+            return `${t.weight.toString()} kg @ ${formatVes(t.pricePerKgVes.toNumber())}/kg`;
+        }
+        if (!t.isWeightBased && t.quantity && t.unitVes && t.unitUsd) {
+            return `${t.quantity} x ${formatVes(t.unitVes.toNumber())} / ${formatUsd(t.unitUsd.toNumber())}`;
+        }
+        return '';
     }
 
     return (
@@ -35,7 +52,7 @@ export function TransactionList({ transactions, onRemoveTransaction, onEditTrans
                         <div>
                             <p className="text-[#0e141b] text-sm font-semibold">{t.description}</p>
                             <p className="text-[#4e7097] text-xs">
-                                {t.quantity} x {formatVes(t.unitVes.toNumber())} / {formatUsd(t.unitUsd.toNumber())}
+                                {renderSubtext(t)}
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
@@ -47,7 +64,7 @@ export function TransactionList({ transactions, onRemoveTransaction, onEditTrans
                                 variant="ghost" 
                                 size="icon" 
                                 onClick={(e) => {
-                                    e.stopPropagation(); // Evita que se dispare el onClick de la <li>
+                                    e.stopPropagation(); 
                                     onRemoveTransaction(t.id);
                                 }} 
                                 className="text-red-500 hover:text-red-700 hover:bg-red-100"

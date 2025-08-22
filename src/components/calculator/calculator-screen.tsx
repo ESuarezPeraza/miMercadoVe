@@ -38,6 +38,9 @@ export function CalculatorScreen() {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
+    const [isWeightBased, setIsWeightBased] = useState(false);
+    const [weight, setWeight] = useState("");
+
     const { toast } = useToast();
 
     useEffect(() => {
@@ -93,16 +96,6 @@ export function CalculatorScreen() {
             return;
         }
 
-        const qty = parseInt(quantity, 10);
-         if(isNaN(qty) || qty <= 0) {
-            toast({
-                title: "Error",
-                description: "Por favor, introduce una cantidad válida.",
-                variant: "destructive",
-            });
-            return;
-        }
-        
         let vesAmount: Big | null = null;
         try {
             if (vesInput) vesAmount = new Big(vesInput);
@@ -117,46 +110,93 @@ export function CalculatorScreen() {
         if ((!vesAmount || vesAmount.lte(0)) && (!usdAmount || usdAmount.lte(0))) {
              toast({
                 title: "Error",
-                description: "Por favor, introduce un monto válido en Bolívares o Dólares.",
+                description: "Por favor, introduce un monto válido.",
                 variant: "destructive",
             });
             return;
         }
 
-        let unitVes: Big;
-        let unitUsd: Big;
+        let newTransaction: Transaction;
 
-        if (vesAmount && vesAmount.gt(0)) {
-            unitVes = vesAmount;
-            unitUsd = vesAmount.div(persistedRate);
-        } else if (usdAmount && usdAmount.gt(0)) {
-            unitUsd = usdAmount;
-            unitVes = usdAmount.times(persistedRate);
+        if (isWeightBased) {
+            const weightValue = parseFloat(weight);
+            if(isNaN(weightValue) || weightValue <= 0) {
+                toast({ title: "Error", description: "Por favor, introduce un peso válido.", variant: "destructive" });
+                return;
+            }
+
+            let pricePerKgVes: Big;
+            let pricePerKgUsd: Big;
+
+            if (vesAmount && vesAmount.gt(0)) {
+                pricePerKgVes = vesAmount;
+                pricePerKgUsd = vesAmount.div(persistedRate);
+            } else if (usdAmount && usdAmount.gt(0)) {
+                pricePerKgUsd = usdAmount;
+                pricePerKgVes = usdAmount.times(persistedRate);
+            } else {
+                return;
+            }
+
+            const weightBig = new Big(weightValue);
+            const vesToAdd = weightBig.times(pricePerKgVes);
+            const usdToAdd = weightBig.times(pricePerKgUsd);
+
+            newTransaction = {
+                id: Date.now().toString(),
+                description: description || "Sin descripción",
+                ves: vesToAdd,
+                usd: usdToAdd,
+                isWeightBased: true,
+                weight: weightBig,
+                pricePerKgVes,
+                pricePerKgUsd
+            };
         } else {
-             return; // Should have been caught by the check above
-        }
-        
-        const vesToAdd = unitVes.times(qty);
-        const usdToAdd = unitUsd.times(qty);
+            const qty = parseInt(quantity, 10);
+            if(isNaN(qty) || qty <= 0) {
+                toast({ title: "Error", description: "Por favor, introduce una cantidad válida.", variant: "destructive" });
+                return;
+            }
 
-        const newTransaction: Transaction = {
-            id: Date.now().toString(),
-            description: description || "Sin descripción",
-            ves: vesToAdd,
-            usd: usdToAdd,
-            quantity: qty,
-            unitVes: unitVes,
-            unitUsd: unitUsd
-        };
+            let unitVes: Big;
+            let unitUsd: Big;
+
+            if (vesAmount && vesAmount.gt(0)) {
+                unitVes = vesAmount;
+                unitUsd = vesAmount.div(persistedRate);
+            } else if (usdAmount && usdAmount.gt(0)) {
+                unitUsd = usdAmount;
+                unitVes = usdAmount.times(persistedRate);
+            } else {
+                return; 
+            }
+            
+            const vesToAdd = unitVes.times(qty);
+            const usdToAdd = unitUsd.times(qty);
+
+            newTransaction = {
+                id: Date.now().toString(),
+                description: description || "Sin descripción",
+                ves: vesToAdd,
+                usd: usdToAdd,
+                quantity: qty,
+                unitVes: unitVes,
+                unitUsd: unitUsd,
+                isWeightBased: false
+            };
+        }
 
         setTransactions(prev => [newTransaction, ...prev]);
-        setTotalVES(prev => prev.plus(vesToAdd));
-        setTotalUSD(prev => prev.plus(usdToAdd));
+        setTotalVES(prev => prev.plus(newTransaction.ves));
+        setTotalUSD(prev => prev.plus(newTransaction.usd));
 
         setVesInput("");
         setUsdInput("");
         setDescription("");
         setQuantity("1");
+        setWeight("");
+        // Keep isWeightBased as is
     };
 
     const handleReset = () => {
@@ -166,6 +206,8 @@ export function CalculatorScreen() {
         setUsdInput("");
         setDescription("");
         setQuantity("1");
+        setWeight("");
+        setIsWeightBased(false);
         setTransactions([]);
         setIsResetDialogOpen(false);
     };
@@ -186,56 +228,97 @@ export function CalculatorScreen() {
     const handleUpdateTransaction = (
         id: string,
         newDescription: string,
-        newQuantity: string,
+        newQuantity: string, // For unit-based
+        newWeight: string, // For weight-based
         newPrice: string,
         priceCurrency: 'ves' | 'usd'
     ) => {
         if (!persistedRate) return;
+        const originalTransaction = transactions.find(t => t.id === id);
+        if (!originalTransaction) return;
 
-        const qty = parseInt(newQuantity, 10);
-        if (isNaN(qty) || qty <= 0) {
-            toast({ title: "Error", description: "Cantidad inválida.", variant: "destructive" });
-            return;
-        }
+        let updatedTransaction: Transaction;
 
-        let price: Big;
-        try {
-            price = new Big(newPrice);
-            if (price.lte(0)) throw new Error();
-        } catch (e) {
-            toast({ title: "Error", description: "Precio inválido.", variant: "destructive" });
-            return;
-        }
-        
-        let unitVes: Big;
-        let unitUsd: Big;
-
-        if(priceCurrency === 'ves') {
-            unitVes = price;
-            unitUsd = price.div(persistedRate);
-        } else {
-            unitUsd = price;
-            unitVes = price.times(persistedRate);
-        }
-
-        const updatedTransactions = transactions.map(t => {
-            if (t.id === id) {
-                return {
-                    ...t,
-                    description: newDescription,
-                    quantity: qty,
-                    unitVes,
-                    unitUsd,
-                    ves: unitVes.times(qty),
-                    usd: unitUsd.times(qty),
-                };
+        if (originalTransaction.isWeightBased) {
+            const weightValue = parseFloat(newWeight);
+            if (isNaN(weightValue) || weightValue <= 0) {
+                toast({ title: "Error", description: "Peso inválido.", variant: "destructive" });
+                return;
             }
-            return t;
-        });
+            const weightBig = new Big(weightValue);
 
+            let price: Big;
+            try {
+                price = new Big(newPrice);
+                if (price.lte(0)) throw new Error();
+            } catch (e) {
+                toast({ title: "Error", description: "Precio por kg inválido.", variant: "destructive" });
+                return;
+            }
+
+            let pricePerKgVes: Big;
+            let pricePerKgUsd: Big;
+
+            if (priceCurrency === 'ves') {
+                pricePerKgVes = price;
+                pricePerKgUsd = price.div(persistedRate);
+            } else {
+                pricePerKgUsd = price;
+                pricePerKgVes = price.times(persistedRate);
+            }
+
+            updatedTransaction = {
+                ...originalTransaction,
+                description: newDescription,
+                weight: weightBig,
+                pricePerKgVes,
+                pricePerKgUsd,
+                ves: weightBig.times(pricePerKgVes),
+                usd: weightBig.times(pricePerKgUsd),
+            };
+
+        } else {
+             const qty = parseInt(newQuantity, 10);
+            if (isNaN(qty) || qty <= 0) {
+                toast({ title: "Error", description: "Cantidad inválida.", variant: "destructive" });
+                return;
+            }
+
+            let price: Big;
+            try {
+                price = new Big(newPrice);
+                if (price.lte(0)) throw new Error();
+            } catch (e) {
+                toast({ title: "Error", description: "Precio inválido.", variant: "destructive" });
+                return;
+            }
+            
+            let unitVes: Big;
+            let unitUsd: Big;
+
+            if(priceCurrency === 'ves') {
+                unitVes = price;
+                unitUsd = price.div(persistedRate);
+            } else {
+                unitUsd = price;
+                unitVes = price.times(persistedRate);
+            }
+
+            updatedTransaction = {
+                ...originalTransaction,
+                description: newDescription,
+                quantity: qty,
+                unitVes,
+                unitUsd,
+                ves: unitVes.times(qty),
+                usd: unitUsd.times(qty),
+            };
+        }
+
+
+        const updatedTransactions = transactions.map(t => t.id === id ? updatedTransaction : t);
         setTransactions(updatedTransactions);
         
-        // Recalculate totals
         const newTotalVES = updatedTransactions.reduce((acc, t) => acc.plus(t.ves), new Big(0));
         const newTotalUSD = updatedTransactions.reduce((acc, t) => acc.plus(t.usd), new Big(0));
         setTotalVES(newTotalVES);
@@ -291,6 +374,10 @@ export function CalculatorScreen() {
                     quantity={quantity}
                     setQuantity={setQuantity}
                     onAdd={addAmount}
+                    isWeightBased={isWeightBased}
+                    setIsWeightBased={setIsWeightBased}
+                    weight={weight}
+                    setWeight={setWeight}
                 />
                 <TransactionList 
                     transactions={transactions} 

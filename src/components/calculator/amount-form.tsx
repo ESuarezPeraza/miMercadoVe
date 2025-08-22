@@ -1,6 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface AmountFormProps {
     vesInput: string;
@@ -12,6 +14,10 @@ interface AmountFormProps {
     quantity: string;
     setQuantity: (value: string) => void;
     onAdd: () => void;
+    isWeightBased: boolean;
+    setIsWeightBased: (value: boolean) => void;
+    weight: string;
+    setWeight: (value: string) => void;
 }
 
 export function AmountForm({ 
@@ -19,7 +25,9 @@ export function AmountForm({
     usdInput, setUsdInput, 
     description, setDescription,
     quantity, setQuantity,
-    onAdd 
+    onAdd,
+    isWeightBased, setIsWeightBased,
+    weight, setWeight
 }: AmountFormProps) {
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -37,6 +45,15 @@ export function AmountForm({
     
     return (
         <>
+            <div className="flex items-center space-x-2 px-4 py-3">
+              <Label htmlFor="weight-switch">Por Unidad</Label>
+              <Switch 
+                id="weight-switch"
+                checked={isWeightBased}
+                onCheckedChange={setIsWeightBased}
+              />
+              <Label htmlFor="weight-switch">Por Peso</Label>
+            </div>
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
                 <label className="flex flex-col flex-1">
                     <input
@@ -47,28 +64,42 @@ export function AmountForm({
                         onKeyDown={handleKeyDown}
                     />
                 </label>
-                <div className="flex items-center bg-[#e7edf3] rounded-lg h-14">
-                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} className="h-full hover:bg-[#dbe1e8]">
-                        <Minus className="h-4 w-4" />
-                    </Button>
-                    <input
-                        placeholder="Cant."
-                        className="form-input w-12 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
-                        onKeyDown={handleKeyDown}
-                        type="text"
-                        pattern="[0-9]*"
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)} className="h-full hover:bg-[#dbe1e8]">
-                        <Plus className="h-4 w-4" />
-                    </Button>
-                </div>
+                 {!isWeightBased ? (
+                    <div className="flex items-center bg-[#e7edf3] rounded-lg h-14">
+                        <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)} className="h-full hover:bg-[#dbe1e8]">
+                            <Minus className="h-4 w-4" />
+                        </Button>
+                        <input
+                            placeholder="Cant."
+                            className="form-input w-12 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
+                            onKeyDown={handleKeyDown}
+                            type="text"
+                            pattern="[0-9]*"
+                        />
+                        <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)} className="h-full hover:bg-[#dbe1e8]">
+                            <Plus className="h-4 w-4" />
+                        </Button>
+                    </div>
+                 ) : (
+                    <label className="flex flex-col">
+                         <input
+                            placeholder="Peso (kg)"
+                            className="form-input flex w-28 min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            value={weight}
+                            onChange={(e) => setWeight(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            type="number"
+                            step="0.01"
+                        />
+                    </label>
+                 )}
             </div>
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
                 <label className="flex flex-col min-w-40 flex-1">
                      <input
-                        placeholder="Precio en Bs"
+                        placeholder={isWeightBased ? "Precio por kg (Bs)" : "Precio en Bs"}
                         className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                         value={vesInput}
                         onChange={(e) => setVesInput(e.target.value)}
@@ -79,7 +110,7 @@ export function AmountForm({
                 </label>
                 <label className="flex flex-col min-w-40 flex-1">
                      <input
-                        placeholder="Precio en $"
+                        placeholder={isWeightBased ? "Precio por kg ($)" : "Precio en $"}
                         className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
                         value={usdInput}
                         onChange={(e) => setUsdInput(e.target.value)}
