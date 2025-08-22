@@ -56,7 +56,7 @@ export function AmountForm({
                 </label>
                  {!isWeightBased ? (
                     <div className="flex bg-[#e7edf3] rounded-lg h-14">
-                        <Button variant="ghost" onClick={() => handleQuantityChange(-1)} className="h-full hover:bg-[#dbe1e8] px-3">
+                        <Button variant="ghost" onClick={() => handleQuantityChange(-1)} className="h-full hover:bg-[#dbe1e8] px-3 py-0">
                             <Minus className="h-4 w-4" />
                         </Button>
                         <input
@@ -68,7 +68,7 @@ export function AmountForm({
                             type="text"
                             pattern="[0-9]*"
                         />
-                        <Button variant="ghost" onClick={() => handleQuantityChange(1)} className="h-full hover:bg-[#dbe1e8] px-3">
+                        <Button variant="ghost" onClick={() => handleQuantityChange(1)} className="h-full hover:bg-[#dbe1e8] px-3 py-0">
                             <Plus className="h-4 w-4" />
                         </Button>
                     </div>
