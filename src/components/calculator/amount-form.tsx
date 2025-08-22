@@ -15,7 +15,6 @@ interface AmountFormProps {
     setQuantity: (value: string) => void;
     onAdd: () => void;
     isWeightBased: boolean;
-    setIsWeightBased: (value: boolean) => void;
     weight: string;
     setWeight: (value: string) => void;
 }
@@ -26,7 +25,7 @@ export function AmountForm({
     description, setDescription,
     quantity, setQuantity,
     onAdd,
-    isWeightBased, setIsWeightBased,
+    isWeightBased,
     weight, setWeight
 }: AmountFormProps) {
 
@@ -45,15 +44,6 @@ export function AmountForm({
     
     return (
         <>
-            <div className="flex items-center space-x-2 px-4 py-3">
-              <Label htmlFor="weight-switch">Por Unidad</Label>
-              <Switch 
-                id="weight-switch"
-                checked={isWeightBased}
-                onCheckedChange={setIsWeightBased}
-              />
-              <Label htmlFor="weight-switch">Por Peso</Label>
-            </div>
             <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
                 <label className="flex flex-col flex-1">
                     <input

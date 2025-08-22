@@ -19,6 +19,8 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Home } from "lucide-react";
 
 const LOCAL_STORAGE_KEY = "exchangeRate";
@@ -363,7 +365,18 @@ export function CalculatorScreen() {
                 <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Totales</h2>
                 <TotalsDisplay totalVES={totalVES.toNumber()} totalUSD={totalUSD.toNumber()} />
 
-                <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Producto</h2>
+                <div className="flex items-center justify-between px-4 pb-3 pt-5">
+                    <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em]">Producto</h2>
+                    <div className="flex items-center space-x-2">
+                        <Label htmlFor="weight-switch" className="text-sm">Unidad</Label>
+                        <Switch
+                            id="weight-switch"
+                            checked={isWeightBased}
+                            onCheckedChange={setIsWeightBased}
+                        />
+                        <Label htmlFor="weight-switch" className="text-sm">Peso</Label>
+                    </div>
+                </div>
                 <AmountForm 
                     vesInput={vesInput}
                     setVesInput={setVesInput}
@@ -375,7 +388,6 @@ export function CalculatorScreen() {
                     setQuantity={setQuantity}
                     onAdd={addAmount}
                     isWeightBased={isWeightBased}
-                    setIsWeightBased={setIsWeightBased}
                     weight={weight}
                     setWeight={setWeight}
                 />
