@@ -23,7 +23,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Home } from "lucide-react";
 
-const LOCAL_STORAGE_KEY = "exchangeRate";
+const LOCAL_STORAGE_RATE_KEY = "exchangeRate";
+const LOCAL_STORAGE_TRANSACTIONS_KEY = "transactionsList";
+
 
 export function CalculatorScreen() {
     const [rateInput, setRateInput] = useState("");
@@ -47,7 +49,8 @@ export function CalculatorScreen() {
 
     useEffect(() => {
         try {
-            const savedRate = localStorage.getItem(LOCAL_STORAGE_KEY);
+            // Load exchange rate
+            const savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
             if (savedRate) {
                 const rate = new Big(savedRate);
                 if (rate.gt(0)) {
@@ -57,11 +60,67 @@ export function CalculatorScreen() {
             } else {
                 setIsRateDialogOpen(true);
             }
+
+            // Load transactions
+            const savedTransactions = localStorage.getItem(LOCAL_STORAGE_TRANSACTIONS_KEY);
+            if (savedTransactions) {
+                const parsedTransactions = JSON.parse(savedTransactions).map((t: any) => ({
+                    ...t,
+                    ves: new Big(t.ves),
+                    usd: new Big(t.usd),
+                    // Reconstruct Big.js instances for details
+                    ...(t.unitVes && { unitVes: new Big(t.unitVes) }),
+                    ...(t.unitUsd && { unitUsd: new Big(t.unitUsd) }),
+                    ...(t.weight && { weight: new Big(t.weight) }),
+                    ...(t.pricePerKgVes && { pricePerKgVes: new Big(t.pricePerKgVes) }),
+                    ...(t.pricePerKgUsd && { pricePerKgUsd: new Big(t.pricePerKgUsd) }),
+                }));
+                setTransactions(parsedTransactions);
+
+                // Recalculate totals from loaded transactions
+                const newTotalVES = parsedTransactions.reduce((acc: Big, t: Transaction) => acc.plus(t.ves), new Big(0));
+                const newTotalUSD = parsedTransactions.reduce((acc: Big, t: Transaction) => acc.plus(t.usd), new Big(0));
+                setTotalVES(newTotalVES);
+                setTotalUSD(newTotalUSD);
+            }
+
         } catch (error) {
             console.error("Could not read from localStorage", error);
+            toast({
+                title: "Error de Carga",
+                description: "No se pudieron cargar los datos guardados. Empezando desde cero.",
+                variant: "destructive",
+            });
         }
         setIsInitialized(true);
     }, []);
+
+    // Effect to save transactions to localStorage whenever they change
+    useEffect(() => {
+        if (!isInitialized) return; // Do not save during initial hydration
+        try {
+            // localStorage only stores strings, so we serialize the Big.js objects
+            const serializableTransactions = transactions.map(t => ({
+                ...t,
+                ves: t.ves.toString(),
+                usd: t.usd.toString(),
+                ...(t.unitVes && { unitVes: t.unitVes.toString() }),
+                ...(t.unitUsd && { unitUsd: t.unitUsd.toString() }),
+                ...(t.weight && { weight: t.weight.toString() }),
+                ...(t.pricePerKgVes && { pricePerKgVes: t.pricePerKgVes.toString() }),
+                ...(t.pricePerKgUsd && { pricePerKgUsd: t.pricePerKgUsd.toString() }),
+            }))
+            localStorage.setItem(LOCAL_STORAGE_TRANSACTIONS_KEY, JSON.stringify(serializableTransactions));
+        } catch (error) {
+            console.error("Could not write transactions to localStorage", error);
+            toast({
+                title: "Error de Guardado",
+                description: "No se pudo guardar el carrito.",
+                variant: "destructive",
+            });
+        }
+    }, [transactions, isInitialized]);
+
 
     const handleSaveRate = () => {
         try {
@@ -75,7 +134,7 @@ export function CalculatorScreen() {
                 return;
             }
             setPersistedRate(newRate);
-            localStorage.setItem(LOCAL_STORAGE_KEY, newRate.toString());
+            localStorage.setItem(LOCAL_STORAGE_RATE_KEY, newRate.toString());
             setIsRateDialogOpen(false);
         } catch (error) {
              console.error("Could not write to localStorage or invalid Big number", error);
@@ -212,6 +271,12 @@ export function CalculatorScreen() {
         setIsWeightBased(false);
         setTransactions([]);
         setIsResetDialogOpen(false);
+        // Also clear from localStorage
+        try {
+            localStorage.removeItem(LOCAL_STORAGE_TRANSACTIONS_KEY);
+        } catch (error) {
+            console.error("Could not remove transactions from localStorage", error);
+        }
     };
 
     const removeTransaction = (transactionId: string) => {
