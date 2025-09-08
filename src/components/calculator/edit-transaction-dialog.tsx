@@ -80,7 +80,7 @@ export function EditTransactionDialog({ transaction, onSave, onClose }: EditTran
                             id="description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="col-span-3 h-10 bg-[#e7edf3] border-none"
+                            className="col-span-3"
                         />
                     </div>
                     {transaction.isWeightBased ? (
@@ -93,7 +93,7 @@ export function EditTransactionDialog({ transaction, onSave, onClose }: EditTran
                                 type="number"
                                 value={weight}
                                 onChange={(e) => setWeight(e.target.value)}
-                                className="col-span-3 h-10 bg-[#e7edf3] border-none"
+                                className="col-span-3"
                             />
                         </div>
                     ) : (
@@ -106,7 +106,7 @@ export function EditTransactionDialog({ transaction, onSave, onClose }: EditTran
                                 type="number"
                                 value={quantity}
                                 onChange={(e) => setQuantity(e.target.value)}
-                                className="col-span-3 h-10 bg-[#e7edf3] border-none"
+                                className="col-span-3"
                             />
                         </div>
                     )}
@@ -126,7 +126,7 @@ export function EditTransactionDialog({ transaction, onSave, onClose }: EditTran
                                     value={price}
                                     onChange={(e) => setPrice(e.target.value)}
                                     placeholder={transaction.isWeightBased ? "Precio por kg" : "Precio unitario"}
-                                    className="col-span-3 h-10 bg-[#e7edf3] border-none"
+                                    className="col-span-3"
                                 />
                             </div>
                         </TabsContent>
@@ -141,7 +141,7 @@ export function EditTransactionDialog({ transaction, onSave, onClose }: EditTran
                                     value={price}
                                     onChange={(e) => setPrice(e.target.value)}
                                     placeholder={transaction.isWeightBased ? "Precio por kg" : "Precio unitario"}
-                                    className="col-span-3 h-10 bg-[#e7edf3] border-none"
+                                    className="col-span-3"
                                 />
                             </div>
                         </TabsContent>

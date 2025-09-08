@@ -397,81 +397,115 @@ export function CalculatorScreen() {
 
     if (!isInitialized) {
         return (
-            <div className="container mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
-                 <header className="flex items-center bg-slate-50 p-4 pb-2 justify-between">
+            <div className="min-h-screen bg-slate-50">
+                <div className="container mx-auto max-w-md px-4 py-6">
+                    <header className="flex items-center justify-between mb-6">
                     <Skeleton className="h-7 w-12" />
                     <Skeleton className="h-7 w-36 mx-auto" />
                     <Skeleton className="h-7 w-24" />
-                </header>
-                <div className="space-y-6 p-4">
+                    </header>
+                    <div className="space-y-6">
                     <Skeleton className="h-8 w-1/3" />
                     <Skeleton className="h-12 w-full" />
                     <Skeleton className="h-8 w-1/3" />
                     <Skeleton className="h-14 w-full" />
                     <Skeleton className="h-14 w-full" />
                     <Skeleton className="h-10 w-full" />
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col min-h-screen">
-             <header className="flex items-center bg-slate-50 p-4 pb-2 justify-between">
-                <h2 className="text-[#0e141b] text-2xl font-bold leading-tight tracking-[-0.015em] flex-1 text-left">Mi Mercado VE</h2>
-                <div className="flex w-auto items-center justify-end">
-                    <button onClick={() => setIsRateDialogOpen(true)} className="text-[#4e7097] text-sm font-bold leading-normal tracking-[0.015em] shrink-0 whitespace-nowrap">
-                        Tasa: {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        <div className="min-h-screen bg-slate-50">
+            <div className="container mx-auto max-w-md">
+                {/* Header */}
+                <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 px-4 py-4">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
+                        <button 
+                            onClick={() => setIsRateDialogOpen(true)} 
+                            className="px-3 py-2 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700 hover:text-slate-900"
+                        >
+                            <span className="hidden sm:inline">Tasa: </span>
+                            {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </button>
-                </div>
-            </header>
-            
-            <main className="flex-1 overflow-y-auto pb-20">
-                <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Totales</h2>
-                <TotalsDisplay totalVES={totalVES.toNumber()} totalUSD={totalUSD.toNumber()} />
-
-                <div className="flex items-center justify-between px-4 pb-3 pt-5">
-                    <h2 className="text-[#0e141b] text-[22px] font-bold leading-tight tracking-[-0.015em]">Producto</h2>
-                    <div className="flex items-center space-x-2">
-                        <Label htmlFor="weight-switch" className="text-sm">Unidad</Label>
-                        <Switch
-                            id="weight-switch"
-                            checked={isWeightBased}
-                            onCheckedChange={setIsWeightBased}
-                        />
-                        <Label htmlFor="weight-switch" className="text-sm">Peso</Label>
                     </div>
-                </div>
-                <AmountForm 
-                    vesInput={vesInput}
-                    setVesInput={setVesInput}
-                    usdInput={usdInput}
-                    setUsdInput={setUsdInput}
-                    description={description}
-                    setDescription={setDescription}
-                    quantity={quantity}
-                    setQuantity={setQuantity}
-                    onAdd={addAmount}
-                    isWeightBased={isWeightBased}
-                    weight={weight}
-                    setWeight={setWeight}
-                />
-                <TransactionList 
-                    transactions={transactions} 
-                    onRemoveTransaction={removeTransaction}
-                    onEditTransaction={handleEditTransaction}
-                />
-                 <div className="px-4 py-4">
-                    <button 
-                        onClick={() => setIsResetDialogOpen(true)}
-                        className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-transparent text-[#0e141b] text-sm font-bold leading-normal tracking-[0.015em] w-full"
-                    >
-                        <span className="truncate">Resetear</span>
-                    </button>
-                </div>
-            </main>
+                </header>
+                
+                {/* Main Content */}
+                <main className="px-4 pb-24 space-y-6">
+                    {/* Totals Section */}
+                    <section className="pt-6">
+                        <h2 className="text-lg font-semibold text-slate-900 mb-4">Totales</h2>
+                        <TotalsDisplay totalVES={totalVES.toNumber()} totalUSD={totalUSD.toNumber()} />
+                    </section>
 
-            
+                    {/* Product Form Section */}
+                    <section className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-semibold text-slate-900">Producto</h2>
+                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                                <Label htmlFor="weight-switch" className="text-sm text-slate-600">Unidad</Label>
+                                <Switch
+                                    id="weight-switch"
+                                    checked={isWeightBased}
+                                    onCheckedChange={setIsWeightBased}
+                                />
+                                <Label htmlFor="weight-switch" className="text-sm text-slate-600">Peso</Label>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                            <AmountForm 
+                                vesInput={vesInput}
+                                setVesInput={setVesInput}
+                                usdInput={usdInput}
+                                setUsdInput={setUsdInput}
+                                description={description}
+                                setDescription={setDescription}
+                                quantity={quantity}
+                                setQuantity={setQuantity}
+                                onAdd={addAmount}
+                                isWeightBased={isWeightBased}
+                                weight={weight}
+                                setWeight={setWeight}
+                            />
+                        </div>
+                    </section>
+
+                    {/* Transaction List */}
+                    <TransactionList 
+                        transactions={transactions} 
+                        onRemoveTransaction={removeTransaction}
+                        onEditTransaction={handleEditTransaction}
+                    />
+                    
+                    {/* Reset Button */}
+                    <div className="pt-4">
+                        <button 
+                            onClick={() => setIsResetDialogOpen(true)}
+                            className="w-full py-3 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+                        >
+                            Resetear Totales
+                        </button>
+                    </div>
+                </main>
+
+                {/* Footer */}
+                <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3">
+                    <div className="container mx-auto max-w-md">
+                        <div className="flex items-center justify-center">
+                            <div className="flex items-center gap-2 text-primary">
+                                <Home className="h-5 w-5" />
+                                <span className="text-sm font-medium">Inicio</span>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+
+            {/* Dialogs */}
             <ResetDialog
                 isOpen={isResetDialogOpen}
                 onOpenChange={setIsResetDialogOpen}
@@ -489,7 +523,7 @@ export function CalculatorScreen() {
                         placeholder="Tasa de cambio"
                         value={rateInput}
                         onChange={(e) => setRateInput(e.target.value)}
-                        className="form-input mt-4 flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none h-14 placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        className="mt-4"
                     />
                     <DialogFooter>
                         <Button onClick={handleSaveRate}>Guardar</Button>
@@ -504,15 +538,6 @@ export function CalculatorScreen() {
                     onClose={() => setEditingTransaction(null)}
                 />
             )}
-
-            <footer className="fixed bottom-0 left-0 right-0 h-16 bg-slate-50 border-t border-[#e7edf3]">
-                <div className="flex h-full items-center justify-around">
-                    <a className="flex flex-col items-center justify-center gap-1 text-primary" href="#">
-                        <Home className="h-6 w-6" />
-                        <span className="text-xs font-medium">Inicio</span>
-                    </a>
-                </div>
-            </footer>
         </div>
     );
 }

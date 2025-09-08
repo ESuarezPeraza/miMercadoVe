@@ -44,77 +44,101 @@ export function AmountForm({
     
     return (
         <>
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-                <label className="flex flex-col flex-1">
+            <div className="space-y-4">
+                {/* Description Input */}
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Descripción
+                    </label>
                     <input
                         placeholder="Descripción"
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-slate-400"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
-                </label>
-                {!isWeightBased ? (
-                    <label className="flex flex-col">
-                        <div className="flex items-center bg-[#e7edf3] rounded-lg h-14">
-                            <button onClick={() => handleQuantityChange(-1)} className="flex items-center justify-center w-10 h-full text-[#4e7097] hover:text-[#0e141b]">
+                </div>
+
+                {/* Quantity/Weight Input */}
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {isWeightBased ? "Peso (kg)" : "Cantidad"}
+                    </label>
+                    {!isWeightBased ? (
+                        <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
+                            <button 
+                                onClick={() => handleQuantityChange(-1)} 
+                                className="flex items-center justify-center w-12 h-12 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
                                 <Minus className="h-4 w-4" />
                             </button>
                             <input
-                                placeholder="Cant."
-                                className="form-input w-12 text-center text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-[#4e7097] p-0 text-base font-normal leading-normal"
+                                placeholder="1"
+                                className="flex-1 px-4 py-3 text-center border-0 focus:ring-0 focus:outline-none"
                                 value={quantity}
                                 onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ''))}
                                 onKeyDown={handleKeyDown}
                                 type="text"
                                 pattern="[0-9]*"
                             />
-                            <button onClick={() => handleQuantityChange(1)} className="flex items-center justify-center w-10 h-full text-[#4e7097] hover:text-[#0e141b]">
+                            <button 
+                                onClick={() => handleQuantityChange(1)} 
+                                className="flex items-center justify-center w-12 h-12 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
                                 <Plus className="h-4 w-4" />
                             </button>
                         </div>
-                    </label>
-                 ) : (
-                    <label className="flex flex-col">
-                         <input
+                    ) : (
+                        <input
                             placeholder="Peso (kg)"
-                            className="form-input flex w-32 min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-slate-400"
                             value={weight}
                             onChange={(e) => setWeight(e.target.value)}
                             onKeyDown={handleKeyDown}
                             type="number"
                             step="0.01"
                         />
-                    </label>
-                 )}
-            </div>
-            <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-                <label className="flex flex-col min-w-40 flex-1">
-                     <input
+                    )}
+                </div>
+
+                {/* Price Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                            {isWeightBased ? "Precio por kg (Bs)" : "Precio en Bs"}
+                        </label>
+                        <input
                         placeholder={isWeightBased ? "Precio por kg (Bs)" : "Precio en Bs"}
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-slate-400"
                         value={vesInput}
                         onChange={(e) => setVesInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         type="number"
                         step="0.01"
                     />
-                </label>
-                <label className="flex flex-col min-w-40 flex-1">
-                     <input
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                            {isWeightBased ? "Precio por kg ($)" : "Precio en $"}
+                        </label>
+                        <input
                         placeholder={isWeightBased ? "Precio por kg ($)" : "Precio en $"}
-                        className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0e141b] focus:outline-0 focus:ring-0 border-none bg-[#e7edf3] focus:border-none placeholder:text-[#4e7097] p-4 text-base font-normal leading-normal"
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-slate-400"
                         value={usdInput}
                         onChange={(e) => setUsdInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                         type="number"
                         step="0.01"
                     />
-                </label>
-            </div>
-             <div className="flex px-4 py-3">
-                <button onClick={onAdd} className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-[#e7edf3] text-[#0e141b] text-sm font-bold leading-normal tracking-[0.015em]">
-                    <span className="truncate">Añadir</span>
+                    </div>
+                </div>
+
+                {/* Add Button */}
+                <button 
+                    onClick={onAdd} 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                    Añadir al Carrito
                 </button>
             </div>
         </>

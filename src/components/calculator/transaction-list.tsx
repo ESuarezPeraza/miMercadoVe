@@ -28,7 +28,13 @@ interface TransactionListProps {
 
 export function TransactionList({ transactions, onRemoveTransaction, onEditTransaction }: TransactionListProps) {
     if (transactions.length === 0) {
-        return null;
+        return (
+            <section className="text-center py-8">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8">
+                    <p className="text-slate-500 text-sm">No hay productos en el carrito</p>
+                </div>
+            </section>
+        );
     }
 
     const renderSubtext = (t: Transaction) => {
@@ -42,39 +48,43 @@ export function TransactionList({ transactions, onRemoveTransaction, onEditTrans
     }
 
     return (
-        <div className="px-4 py-3">
-             <h3 className="text-[#0e141b] text-lg font-bold leading-tight tracking-[-0.015em] pb-2">
+        <section className="space-y-4">
+            <h3 className="text-lg font-semibold text-slate-900">
                 Carrito
             </h3>
-            <ul className="space-y-2">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
                 {transactions.map((t) => (
-                    <li key={t.id} className="flex justify-between items-center bg-[#e7edf3] p-3 rounded-lg cursor-pointer" onClick={() => onEditTransaction(t)}>
-                        <div>
-                            <p className="text-[#0e141b] text-sm font-semibold">{t.description}</p>
-                            <p className="text-[#4e7097] text-xs">
+                    <div 
+                        key={t.id} 
+                        className="flex justify-between items-center p-4 hover:bg-slate-50 cursor-pointer transition-colors" 
+                        onClick={() => onEditTransaction(t)}
+                    >
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 truncate">{t.description}</p>
+                            <p className="text-xs text-slate-500 mt-1">
                                 {renderSubtext(t)}
                             </p>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-right">
-                                <p className="text-[#0e141b] text-sm font-semibold">{formatVes(t.ves.toNumber())}</p>
-                                <p className="text-[#4e7097] text-xs">{formatUsd(t.usd.toNumber())}</p>
+                        <div className="flex items-center gap-3 ml-4">
+                            <div className="text-right min-w-0">
+                                <p className="text-sm font-semibold text-slate-900 truncate">{formatVes(t.ves.toNumber())}</p>
+                                <p className="text-xs text-slate-500 truncate">{formatUsd(t.usd.toNumber())}</p>
                             </div>
                             <Button 
                                 variant="ghost" 
-                                size="icon" 
+                                size="sm"
                                 onClick={(e) => {
                                     e.stopPropagation(); 
                                     onRemoveTransaction(t.id);
                                 }} 
-                                className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
-                    </li>
+                    </div>
                 ))}
-            </ul>
-        </div>
+            </div>
+        </section>
     );
 }
