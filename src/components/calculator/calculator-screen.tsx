@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Big from "big.js";
+import Link from 'next/link';
 import { TotalsDisplay } from "./totals-display";
 import { AmountForm } from "./amount-form";
 import { ResetDialog } from "./reset-dialog";
@@ -11,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TransactionList, type Transaction } from "./transaction-list";
 import { EditTransactionDialog } from "./edit-transaction-dialog";
 import { SaveCartDialog } from "./save-cart-dialog";
-import { SavedCartsDialog } from "./saved-carts-dialog";
 import {
     Dialog,
     DialogContent,
@@ -40,7 +40,6 @@ export interface SavedCart {
     exchangeRate: number;
 }
 
-
 export function CalculatorScreen() {
     const [rateInput, setRateInput] = useState("");
     const [persistedRate, setPersistedRate] = useState<Big | null>(null);
@@ -56,9 +55,7 @@ export function CalculatorScreen() {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [isSaveCartDialogOpen, setIsSaveCartDialogOpen] = useState(false);
-    const [isSavedCartsDialogOpen, setIsSavedCartsDialogOpen] = useState(false);
-    const [savedCarts, setSavedCarts] = useState<SavedCart[]>([]);
-
+    
     const [isWeightBased, setIsWeightBased] = useState(false);
     const [weight, setWeight] = useState("");
 
@@ -101,13 +98,6 @@ export function CalculatorScreen() {
                 setTotalUSD(newTotalUSD);
             }
 
-            // Load saved carts
-            const savedCartsData = localStorage.getItem(LOCAL_STORAGE_SAVED_CARTS_KEY);
-            if (savedCartsData) {
-                const parsedSavedCarts = JSON.parse(savedCartsData);
-                setSavedCarts(parsedSavedCarts);
-            }
-
         } catch (error) {
             console.error("Could not read from localStorage", error);
             toast({
@@ -145,20 +135,6 @@ export function CalculatorScreen() {
         }
     }, [transactions, isInitialized]);
 
-    // Effect to save savedCarts to localStorage whenever they change
-    useEffect(() => {
-        if (!isInitialized) return;
-        try {
-            localStorage.setItem(LOCAL_STORAGE_SAVED_CARTS_KEY, JSON.stringify(savedCarts));
-        } catch (error) {
-            console.error("Could not write saved carts to localStorage", error);
-            toast({
-                title: "Error de Guardado",
-                description: "No se pudieron guardar los carritos.",
-                variant: "destructive",
-            });
-        }
-    }, [savedCarts, isInitialized]);
 
     const handleSaveRate = () => {
         try {
@@ -462,44 +438,24 @@ export function CalculatorScreen() {
             exchangeRate: persistedRate.toNumber(),
         };
 
-        setSavedCarts(prev => [newSavedCart, ...prev]);
-        
-        toast({
-            title: "Carrito guardado",
-            description: `${type === 'budget' ? 'Presupuesto' : 'Compra'} "${name}" guardado exitosamente.`,
-        });
-    };
+        try {
+            const savedCartsData = localStorage.getItem(LOCAL_STORAGE_SAVED_CARTS_KEY);
+            const savedCarts = savedCartsData ? JSON.parse(savedCartsData) : [];
+            savedCarts.push(newSavedCart);
+            localStorage.setItem(LOCAL_STORAGE_SAVED_CARTS_KEY, JSON.stringify(savedCarts));
 
-    const handleLoadCart = (cart: SavedCart) => {
-        // Reconstruct transactions with Big.js instances
-        const reconstructedTransactions = cart.transactions.map(t => ({
-            ...t,
-            ves: new Big(t.ves.toString()),
-            usd: new Big(t.usd.toString()),
-            ...(t.unitVes && { unitVes: new Big(t.unitVes.toString()) }),
-            ...(t.unitUsd && { unitUsd: new Big(t.unitUsd.toString()) }),
-            ...(t.weight && { weight: new Big(t.weight.toString()) }),
-            ...(t.pricePerKgVes && { pricePerKgVes: new Big(t.pricePerKgVes.toString()) }),
-            ...(t.pricePerKgUsd && { pricePerKgUsd: new Big(t.pricePerKgUsd.toString()) }),
-        }));
-
-        setTransactions(reconstructedTransactions);
-        setTotalVES(new Big(cart.totalVES));
-        setTotalUSD(new Big(cart.totalUSD));
-        setIsSavedCartsDialogOpen(false);
-        
-        toast({
-            title: "Carrito cargado",
-            description: `${cart.type === 'budget' ? 'Presupuesto' : 'Compra'} "${cart.name}" cargado exitosamente.`,
-        });
-    };
-
-    const handleDeleteSavedCart = (cartId: string) => {
-        setSavedCarts(prev => prev.filter(cart => cart.id !== cartId));
-        toast({
-            title: "Carrito eliminado",
-            description: "El carrito ha sido eliminado exitosamente.",
-        });
+            toast({
+                title: "Carrito guardado",
+                description: `${type === 'budget' ? 'Presupuesto' : 'Compra'} "${name}" guardado exitosamente.`,
+            });
+        } catch (error) {
+             console.error("Could not write saved carts to localStorage", error);
+             toast({
+                title: "Error de Guardado",
+                description: "No se pudo guardar el carrito.",
+                variant: "destructive",
+            });
+        }
     };
 
     if (!isInitialized) {
@@ -507,8 +463,7 @@ export function CalculatorScreen() {
             <div className="min-h-screen bg-slate-50">
                 <div className="container mx-auto max-w-md px-4 py-6">
                     <header className="flex items-center justify-between mb-6">
-                    <Skeleton className="h-7 w-12" />
-                    <Skeleton className="h-7 w-36 mx-auto" />
+                    <Skeleton className="h-7 w-36" />
                     <Skeleton className="h-7 w-24" />
                     </header>
                     <div className="space-y-6">
@@ -617,13 +572,10 @@ export function CalculatorScreen() {
                                 <Home className="h-5 w-5" />
                                 <span className="text-xs font-medium">Inicio</span>
                             </button>
-                             <button 
-                                onClick={() => setIsSavedCartsDialogOpen(true)} 
-                                className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors"
-                            >
+                            <Link href="/history" passHref className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors">
                                 <History className="h-5 w-5" />
                                 <span className="text-xs font-medium">Historial</span>
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </footer>
@@ -659,14 +611,6 @@ export function CalculatorScreen() {
                 isOpen={isSaveCartDialogOpen}
                 onOpenChange={setIsSaveCartDialogOpen}
                 onSave={handleSaveCart}
-            />
-
-            <SavedCartsDialog
-                isOpen={isSavedCartsDialogOpen}
-                onOpenChange={setIsSavedCartsDialogOpen}
-                savedCarts={savedCarts}
-                onLoadCart={handleLoadCart}
-                onDeleteCart={handleDeleteSavedCart}
             />
 
             {editingTransaction && (
