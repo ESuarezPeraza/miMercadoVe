@@ -117,8 +117,8 @@ export default function HistoryPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto max-w-md">
-                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 px-4 py-4">
+            <div className="container mx-auto max-w-md px-4">
+                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
                     <div className="flex items-center gap-4">
                         <Link href="/" passHref>
                            <Button variant="ghost" size="icon">
@@ -129,7 +129,7 @@ export default function HistoryPage() {
                     </div>
                 </header>
 
-                <main className="px-4 pb-24 space-y-6">
+                <main className="pb-24 space-y-6">
                     <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full pt-6">
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="all">Todos ({savedCarts.length})</TabsTrigger>
