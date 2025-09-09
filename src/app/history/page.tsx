@@ -9,10 +9,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatVes, formatUsd } from "@/lib/formatters";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, Receipt, Trash2, Eye, Calendar, ArrowLeft, Home, History } from 'lucide-react';
-import type { SavedCart, Transaction } from '@/components/calculator/calculator-screen';
+import type { SavedCart } from '@/components/calculator/calculator-screen';
 
 const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
-const LOCAL_STORAGE_TRANSACTIONS_KEY = "transactionsList";
 
 export default function HistoryPage() {
     const [savedCarts, setSavedCarts] = useState<SavedCart[]>([]);
@@ -26,7 +25,6 @@ export default function HistoryPage() {
             const savedCartsData = localStorage.getItem(LOCAL_STORAGE_SAVED_CARTS_KEY);
             if (savedCartsData) {
                 const parsedSavedCarts: SavedCart[] = JSON.parse(savedCartsData);
-                // Sort by date, newest first
                 parsedSavedCarts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 setSavedCarts(parsedSavedCarts);
             }
@@ -39,7 +37,7 @@ export default function HistoryPage() {
             });
         }
         setIsInitialized(true);
-    }, []);
+    }, [toast]);
 
     useEffect(() => {
         if (!isInitialized) return;
@@ -53,39 +51,10 @@ export default function HistoryPage() {
                 variant: "destructive",
             });
         }
-    }, [savedCarts, isInitialized]);
+    }, [savedCarts, isInitialized, toast]);
 
-    const handleLoadCart = (cartToLoad: SavedCart) => {
-        try {
-            // We need to serialize the transactions with Big.js objects converted to strings
-            const serializableTransactions = cartToLoad.transactions.map((t: any) => ({
-                ...t,
-                ves: t.ves.toString(),
-                usd: t.usd.toString(),
-                ...(t.unitVes && { unitVes: t.unitVes.toString() }),
-                ...(t.unitUsd && { unitUsd: t.unitUsd.toString() }),
-                ...(t.weight && { weight: t.weight.toString() }),
-                ...(t.pricePerKgVes && { pricePerKgVes: t.pricePerKgVes.toString() }),
-                ...(t.pricePerKgUsd && { pricePerKgUsd: t.pricePerKgUsd.toString() }),
-            }));
-            localStorage.setItem(LOCAL_STORAGE_TRANSACTIONS_KEY, JSON.stringify(serializableTransactions));
-            
-            toast({
-                title: "Carrito cargado",
-                description: `${cartToLoad.type === 'budget' ? 'Presupuesto' : 'Compra'} "${cartToLoad.name}" cargado exitosamente.`,
-            });
-
-            // Navigate back to the home page
-            router.push('/');
-
-        } catch (error) {
-            console.error("Could not load cart to localStorage", error);
-            toast({
-                title: "Error al Cargar",
-                description: "No se pudo cargar el carrito seleccionado.",
-                variant: "destructive",
-            });
-        }
+    const handleViewCart = (cartId: string) => {
+        router.push(`/history/${cartId}`);
     };
     
     const handleDeleteCart = (cartId: string) => {
@@ -117,8 +86,8 @@ export default function HistoryPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto max-w-md px-4">
-                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
+            <div className="container mx-auto max-w-md">
+                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4 px-4">
                     <div className="flex items-center gap-4">
                         <Link href="/" passHref>
                            <Button variant="ghost" size="icon">
@@ -129,7 +98,7 @@ export default function HistoryPage() {
                     </div>
                 </header>
 
-                <main className="pb-24 space-y-6">
+                <main className="pb-24 space-y-6 px-4">
                     <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full pt-6">
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="all">Todos ({savedCarts.length})</TabsTrigger>
@@ -195,11 +164,11 @@ export default function HistoryPage() {
                                                 <Button
                                                     variant="outline"
                                                     size="icon"
-                                                    onClick={() => handleLoadCart(cart)}
+                                                    onClick={() => handleViewCart(cart.id)}
                                                     className="h-8 w-8"
                                                 >
                                                     <Eye className="h-4 w-4" />
-                                                    <span className="sr-only">Cargar</span>
+                                                    <span className="sr-only">Ver</span>
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
@@ -220,9 +189,9 @@ export default function HistoryPage() {
                 </main>
             </div>
 
-            <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200">
                 <div className="container mx-auto max-w-md">
-                    <div className="flex items-center justify-around">
+                    <div className="flex items-center justify-around px-4 py-3">
                         <Link href="/" passHref className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors">
                             <Home className="h-5 w-5" />
                             <span className="text-xs font-medium">Inicio</span>
