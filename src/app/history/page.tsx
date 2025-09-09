@@ -86,8 +86,8 @@ export default function HistoryPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto max-w-md">
-                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4 px-4">
+            <div className="container mx-auto max-w-md px-4">
+                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
                     <div className="flex items-center gap-4">
                         <Link href="/" passHref>
                            <Button variant="ghost" size="icon">
@@ -98,7 +98,7 @@ export default function HistoryPage() {
                     </div>
                 </header>
 
-                <main className="pb-24 space-y-6 px-4">
+                <main className="pb-24 space-y-6">
                     <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full pt-6">
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="all">Todos ({savedCarts.length})</TabsTrigger>
@@ -190,8 +190,8 @@ export default function HistoryPage() {
             </div>
 
             <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200">
-                <div className="container mx-auto max-w-md">
-                    <div className="flex items-center justify-around px-4 py-3">
+                <div className="container mx-auto max-w-md px-4">
+                    <div className="flex items-center justify-around py-3">
                         <Link href="/" passHref className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors">
                             <Home className="h-5 w-5" />
                             <span className="text-xs font-medium">Inicio</span>

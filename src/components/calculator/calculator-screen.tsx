@@ -564,9 +564,9 @@ export function CalculatorScreen() {
             </main>
 
             {/* Footer */}
-            <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3">
-                <div className="container mx-auto max-w-md">
-                    <div className="flex items-center justify-around">
+            <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200">
+                <div className="container mx-auto max-w-md px-4">
+                    <div className="flex items-center justify-around py-3">
                          <button className="flex flex-col items-center gap-1 text-primary">
                             <Home className="h-5 w-5" />
                             <span className="text-xs font-medium">Inicio</span>
