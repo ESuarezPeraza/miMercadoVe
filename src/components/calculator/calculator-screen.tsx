@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Big from "big.js";
+import Link from 'next/link';
 import { TotalsDisplay } from "./totals-display";
 import { AmountForm } from "./amount-form";
 import { ResetDialog } from "./reset-dialog";
@@ -10,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransactionList, type Transaction } from "./transaction-list";
 import { EditTransactionDialog } from "./edit-transaction-dialog";
+import { SaveCartDialog } from "./save-cart-dialog";
 import {
     Dialog,
     DialogContent,
@@ -21,11 +23,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Home } from "lucide-react";
+import { Home, Save, History } from "lucide-react";
 
 const LOCAL_STORAGE_RATE_KEY = "exchangeRate";
 const LOCAL_STORAGE_TRANSACTIONS_KEY = "transactionsList";
+const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
 
+export interface SavedCart {
+    id: string;
+    name: string;
+    type: 'purchase' | 'budget';
+    createdAt: string;
+    transactions: Transaction[];
+    totalVES: number;
+    totalUSD: number;
+    exchangeRate: number;
+}
 
 export function CalculatorScreen() {
     const [rateInput, setRateInput] = useState("");
@@ -41,7 +54,8 @@ export function CalculatorScreen() {
     const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-
+    const [isSaveCartDialogOpen, setIsSaveCartDialogOpen] = useState(false);
+    
     const [isWeightBased, setIsWeightBased] = useState(false);
     const [weight, setWeight] = useState("");
 
@@ -394,14 +408,62 @@ export function CalculatorScreen() {
         setEditingTransaction(null);
     };
 
+    const handleSaveCart = (name: string, type: 'purchase' | 'budget') => {
+        if (transactions.length === 0) {
+            toast({
+                title: "Carrito vacío",
+                description: "No hay productos en el carrito para guardar.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        if (!persistedRate) {
+            toast({
+                title: "Error",
+                description: "No hay tasa de cambio configurada.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const newSavedCart: SavedCart = {
+            id: Date.now().toString(),
+            name,
+            type,
+            createdAt: new Date().toISOString(),
+            transactions: [...transactions],
+            totalVES: totalVES.toNumber(),
+            totalUSD: totalUSD.toNumber(),
+            exchangeRate: persistedRate.toNumber(),
+        };
+
+        try {
+            const savedCartsData = localStorage.getItem(LOCAL_STORAGE_SAVED_CARTS_KEY);
+            const savedCarts = savedCartsData ? JSON.parse(savedCartsData) : [];
+            savedCarts.push(newSavedCart);
+            localStorage.setItem(LOCAL_STORAGE_SAVED_CARTS_KEY, JSON.stringify(savedCarts));
+
+            toast({
+                title: "Carrito guardado",
+                description: `${type === 'budget' ? 'Presupuesto' : 'Compra'} "${name}" guardado exitosamente.`,
+            });
+        } catch (error) {
+             console.error("Could not write saved carts to localStorage", error);
+             toast({
+                title: "Error de Guardado",
+                description: "No se pudo guardar el carrito.",
+                variant: "destructive",
+            });
+        }
+    };
 
     if (!isInitialized) {
         return (
             <div className="min-h-screen bg-slate-50">
                 <div className="container mx-auto max-w-md px-4 py-6">
                     <header className="flex items-center justify-between mb-6">
-                    <Skeleton className="h-7 w-12" />
-                    <Skeleton className="h-7 w-36 mx-auto" />
+                    <Skeleton className="h-7 w-36" />
                     <Skeleton className="h-7 w-24" />
                     </header>
                     <div className="space-y-6">
@@ -418,92 +480,104 @@ export function CalculatorScreen() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <div className="container mx-auto max-w-md">
-                {/* Header */}
-                <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 px-4 py-4">
+        <div className="min-h-screen bg-slate-50 flex flex-col">
+            {/* Header */}
+            <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
+                    <button 
+                        onClick={() => setIsRateDialogOpen(true)} 
+                        className="px-3 py-2 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700 hover:text-slate-900"
+                    >
+                        <span className="hidden sm:inline">Tasa: </span>
+                        {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </button>
+                </div>
+            </header>
+            
+            {/* Main Content */}
+            <main className="flex-1 pb-24 space-y-6">
+                {/* Totals Section */}
+                <section className="pt-6">
+                    <h2 className="text-lg font-semibold text-slate-900 mb-4">Totales</h2>
+                    <TotalsDisplay totalVES={totalVES.toNumber()} totalUSD={totalUSD.toNumber()} />
+                </section>
+
+                {/* Product Form Section */}
+                <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
-                        <button 
-                            onClick={() => setIsRateDialogOpen(true)} 
-                            className="px-3 py-2 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700 hover:text-slate-900"
-                        >
-                            <span className="hidden sm:inline">Tasa: </span>
-                            {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </button>
-                    </div>
-                </header>
-                
-                {/* Main Content */}
-                <main className="px-4 pb-24 space-y-6">
-                    {/* Totals Section */}
-                    <section className="pt-6">
-                        <h2 className="text-lg font-semibold text-slate-900 mb-4">Totales</h2>
-                        <TotalsDisplay totalVES={totalVES.toNumber()} totalUSD={totalUSD.toNumber()} />
-                    </section>
-
-                    {/* Product Form Section */}
-                    <section className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-semibold text-slate-900">Producto</h2>
-                            <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
-                                <Label htmlFor="weight-switch" className="text-sm text-slate-600">Unidad</Label>
-                                <Switch
-                                    id="weight-switch"
-                                    checked={isWeightBased}
-                                    onCheckedChange={setIsWeightBased}
-                                />
-                                <Label htmlFor="weight-switch" className="text-sm text-slate-600">Peso</Label>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                            <AmountForm 
-                                vesInput={vesInput}
-                                setVesInput={setVesInput}
-                                usdInput={usdInput}
-                                setUsdInput={setUsdInput}
-                                description={description}
-                                setDescription={setDescription}
-                                quantity={quantity}
-                                setQuantity={setQuantity}
-                                onAdd={addAmount}
-                                isWeightBased={isWeightBased}
-                                weight={weight}
-                                setWeight={setWeight}
+                        <h2 className="text-lg font-semibold text-slate-900">Producto</h2>
+                        <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                            <Label htmlFor="weight-switch" className="text-sm text-slate-600">Unidad</Label>
+                            <Switch
+                                id="weight-switch"
+                                checked={isWeightBased}
+                                onCheckedChange={setIsWeightBased}
                             />
+                            <Label htmlFor="weight-switch" className="text-sm text-slate-600">Peso</Label>
                         </div>
-                    </section>
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                        <AmountForm 
+                            vesInput={vesInput}
+                            setVesInput={setVesInput}
+                            usdInput={usdInput}
+                            setUsdInput={setUsdInput}
+                            description={description}
+                            setDescription={setDescription}
+                            quantity={quantity}
+                            setQuantity={setQuantity}
+                            onAdd={addAmount}
+                            isWeightBased={isWeightBased}
+                            weight={weight}
+                            setWeight={setWeight}
+                        />
+                    </div>
+                </section>
 
-                    {/* Transaction List */}
-                    <TransactionList 
-                        transactions={transactions} 
-                        onRemoveTransaction={removeTransaction}
-                        onEditTransaction={handleEditTransaction}
-                    />
-                    
-                    {/* Reset Button */}
-                    <div className="pt-4">
+                {/* Transaction List */}
+                <TransactionList 
+                    transactions={transactions} 
+                    onRemoveTransaction={removeTransaction}
+                    onEditTransaction={handleEditTransaction}
+                />
+                
+                {/* Reset Button */}
+                <div className="pt-4">
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => setIsSaveCartDialogOpen(true)}
+                            disabled={transactions.length === 0}
+                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                        >
+                            <Save className="h-4 w-4" />
+                            Guardar
+                        </button>
                         <button 
                             onClick={() => setIsResetDialogOpen(true)}
-                            className="w-full py-3 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+                            className="px-4 py-3 text-slate-600 hover:text-slate-900 font-medium transition-colors border border-slate-200 rounded-lg hover:bg-white"
                         >
-                            Resetear Totales
+                            Reset
                         </button>
                     </div>
-                </main>
+                </div>
+            </main>
 
-                {/* Footer */}
-                <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3">
-                    <div className="container mx-auto max-w-md">
-                        <div className="flex items-center justify-center">
-                            <div className="flex items-center gap-2 text-primary">
-                                <Home className="h-5 w-5" />
-                                <span className="text-sm font-medium">Inicio</span>
-                            </div>
-                        </div>
+            {/* Footer */}
+            <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3">
+                <div className="container mx-auto max-w-md">
+                    <div className="flex items-center justify-around">
+                         <button className="flex flex-col items-center gap-1 text-primary">
+                            <Home className="h-5 w-5" />
+                            <span className="text-xs font-medium">Inicio</span>
+                        </button>
+                        <Link href="/history" passHref className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors">
+                            <History className="h-5 w-5" />
+                            <span className="text-xs font-medium">Historial</span>
+                        </Link>
                     </div>
-                </footer>
-            </div>
+                </div>
+            </footer>
 
             {/* Dialogs */}
             <ResetDialog
@@ -530,6 +604,12 @@ export function CalculatorScreen() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <SaveCartDialog
+                isOpen={isSaveCartDialogOpen}
+                onOpenChange={setIsSaveCartDialogOpen}
+                onSave={handleSaveCart}
+            />
 
             {editingTransaction && (
                 <EditTransactionDialog
