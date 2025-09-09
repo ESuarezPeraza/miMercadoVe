@@ -483,7 +483,7 @@ export function CalculatorScreen() {
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Header */}
             <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
-                <div className="flex items-center justify-between">
+                <div className="h-10 flex items-center justify-between">
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
                     <button 
                         onClick={() => setIsRateDialogOpen(true)} 
