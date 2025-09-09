@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransactionList, type Transaction } from "./transaction-list";
 import { EditTransactionDialog } from "./edit-transaction-dialog";
+import { SaveCartDialog } from "./save-cart-dialog";
+import { SavedCartsDialog } from "./saved-carts-dialog";
 import {
     Dialog,
     DialogContent,
@@ -21,10 +23,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Home } from "lucide-react";
+import { Home, Save, History } from "lucide-react";
 
 const LOCAL_STORAGE_RATE_KEY = "exchangeRate";
 const LOCAL_STORAGE_TRANSACTIONS_KEY = "transactionsList";
+const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
+
+export interface SavedCart {
+    id: string;
+    name: string;
+    type: 'purchase' | 'budget';
+    createdAt: string;
+    transactions: Transaction[];
+    totalVES: number;
+    totalUSD: number;
+    exchangeRate: number;
+}
 
 
 export function CalculatorScreen() {
@@ -41,6 +55,9 @@ export function CalculatorScreen() {
     const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+    const [isSaveCartDialogOpen, setIsSaveCartDialogOpen] = useState(false);
+    const [isSavedCartsDialogOpen, setIsSavedCartsDialogOpen] = useState(false);
+    const [savedCarts, setSavedCarts] = useState<SavedCart[]>([]);
 
     const [isWeightBased, setIsWeightBased] = useState(false);
     const [weight, setWeight] = useState("");
@@ -84,6 +101,13 @@ export function CalculatorScreen() {
                 setTotalUSD(newTotalUSD);
             }
 
+            // Load saved carts
+            const savedCartsData = localStorage.getItem(LOCAL_STORAGE_SAVED_CARTS_KEY);
+            if (savedCartsData) {
+                const parsedSavedCarts = JSON.parse(savedCartsData);
+                setSavedCarts(parsedSavedCarts);
+            }
+
         } catch (error) {
             console.error("Could not read from localStorage", error);
             toast({
@@ -121,6 +145,20 @@ export function CalculatorScreen() {
         }
     }, [transactions, isInitialized]);
 
+    // Effect to save savedCarts to localStorage whenever they change
+    useEffect(() => {
+        if (!isInitialized) return;
+        try {
+            localStorage.setItem(LOCAL_STORAGE_SAVED_CARTS_KEY, JSON.stringify(savedCarts));
+        } catch (error) {
+            console.error("Could not write saved carts to localStorage", error);
+            toast({
+                title: "Error de Guardado",
+                description: "No se pudieron guardar los carritos.",
+                variant: "destructive",
+            });
+        }
+    }, [savedCarts, isInitialized]);
 
     const handleSaveRate = () => {
         try {
@@ -394,6 +432,75 @@ export function CalculatorScreen() {
         setEditingTransaction(null);
     };
 
+    const handleSaveCart = (name: string, type: 'purchase' | 'budget') => {
+        if (transactions.length === 0) {
+            toast({
+                title: "Carrito vacío",
+                description: "No hay productos en el carrito para guardar.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        if (!persistedRate) {
+            toast({
+                title: "Error",
+                description: "No hay tasa de cambio configurada.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const newSavedCart: SavedCart = {
+            id: Date.now().toString(),
+            name,
+            type,
+            createdAt: new Date().toISOString(),
+            transactions: [...transactions],
+            totalVES: totalVES.toNumber(),
+            totalUSD: totalUSD.toNumber(),
+            exchangeRate: persistedRate.toNumber(),
+        };
+
+        setSavedCarts(prev => [newSavedCart, ...prev]);
+        
+        toast({
+            title: "Carrito guardado",
+            description: `${type === 'budget' ? 'Presupuesto' : 'Compra'} "${name}" guardado exitosamente.`,
+        });
+    };
+
+    const handleLoadCart = (cart: SavedCart) => {
+        // Reconstruct transactions with Big.js instances
+        const reconstructedTransactions = cart.transactions.map(t => ({
+            ...t,
+            ves: new Big(t.ves.toString()),
+            usd: new Big(t.usd.toString()),
+            ...(t.unitVes && { unitVes: new Big(t.unitVes.toString()) }),
+            ...(t.unitUsd && { unitUsd: new Big(t.unitUsd.toString()) }),
+            ...(t.weight && { weight: new Big(t.weight.toString()) }),
+            ...(t.pricePerKgVes && { pricePerKgVes: new Big(t.pricePerKgVes.toString()) }),
+            ...(t.pricePerKgUsd && { pricePerKgUsd: new Big(t.pricePerKgUsd.toString()) }),
+        }));
+
+        setTransactions(reconstructedTransactions);
+        setTotalVES(new Big(cart.totalVES));
+        setTotalUSD(new Big(cart.totalUSD));
+        setIsSavedCartsDialogOpen(false);
+        
+        toast({
+            title: "Carrito cargado",
+            description: `${cart.type === 'budget' ? 'Presupuesto' : 'Compra'} "${cart.name}" cargado exitosamente.`,
+        });
+    };
+
+    const handleDeleteSavedCart = (cartId: string) => {
+        setSavedCarts(prev => prev.filter(cart => cart.id !== cartId));
+        toast({
+            title: "Carrito eliminado",
+            description: "El carrito ha sido eliminado exitosamente.",
+        });
+    };
 
     if (!isInitialized) {
         return (
@@ -423,6 +530,12 @@ export function CalculatorScreen() {
                 {/* Header */}
                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 px-4 py-4">
                     <div className="flex items-center justify-between">
+                        <button 
+                            onClick={() => setIsSavedCartsDialogOpen(true)} 
+                            className="p-2 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 hover:shadow-sm transition-all"
+                        >
+                            <History className="h-5 w-5 text-slate-600" />
+                        </button>
                         <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
                         <button 
                             onClick={() => setIsRateDialogOpen(true)} 
@@ -483,12 +596,22 @@ export function CalculatorScreen() {
                     
                     {/* Reset Button */}
                     <div className="pt-4">
-                        <button 
-                            onClick={() => setIsResetDialogOpen(true)}
-                            className="w-full py-3 text-slate-600 hover:text-slate-900 font-medium transition-colors"
-                        >
-                            Resetear Totales
-                        </button>
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={() => setIsSaveCartDialogOpen(true)}
+                                disabled={transactions.length === 0}
+                                className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                            >
+                                <Save className="h-4 w-4" />
+                                Guardar Carrito
+                            </button>
+                            <button 
+                                onClick={() => setIsResetDialogOpen(true)}
+                                className="px-4 py-3 text-slate-600 hover:text-slate-900 font-medium transition-colors border border-slate-200 rounded-lg hover:bg-white"
+                            >
+                                Reset
+                            </button>
+                        </div>
                     </div>
                 </main>
 
@@ -530,6 +653,20 @@ export function CalculatorScreen() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <SaveCartDialog
+                isOpen={isSaveCartDialogOpen}
+                onOpenChange={setIsSaveCartDialogOpen}
+                onSave={handleSaveCart}
+            />
+
+            <SavedCartsDialog
+                isOpen={isSavedCartsDialogOpen}
+                onOpenChange={setIsSavedCartsDialogOpen}
+                savedCarts={savedCarts}
+                onLoadCart={handleLoadCart}
+                onDeleteCart={handleDeleteSavedCart}
+            />
 
             {editingTransaction && (
                 <EditTransactionDialog
