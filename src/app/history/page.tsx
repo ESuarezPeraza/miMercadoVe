@@ -87,12 +87,12 @@ export default function HistoryPage() {
     return (
         <div className="min-h-screen bg-slate-50">
             <div className="container mx-auto max-w-md">
-                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4 px-4">
+                <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4 px-4">
                     <div className="flex items-center gap-4">
                         <Link href="/" passHref>
-                           <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon">
                                 <ArrowLeft className="h-5 w-5" />
-                           </Button>
+                            </Button>
                         </Link>
                         <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Historial</h1>
                     </div>

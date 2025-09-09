@@ -480,10 +480,11 @@ export function CalculatorScreen() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50">
+            <div className="container mx-auto max-w-md">
             {/* Header */}
-            <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
-                <div className="flex items-center justify-between">
+                <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4 px-4">
+                    <div className="flex items-center justify-between">
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
                     <button 
                         onClick={() => setIsRateDialogOpen(true)} 
@@ -491,12 +492,12 @@ export function CalculatorScreen() {
                     >
                         <span className="hidden sm:inline">Tasa: </span>
                         {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </button>
-                </div>
-            </header>
+                    </button>
+                    </div>
+                </header>
             
             {/* Main Content */}
-            <main className="flex-1 pb-24 space-y-6">
+                <main className="pb-24 space-y-6 px-4">
                 {/* Totals Section */}
                 <section className="pt-6">
                     <h2 className="text-lg font-semibold text-slate-900 mb-4">Totales</h2>
@@ -561,13 +562,14 @@ export function CalculatorScreen() {
                         </button>
                     </div>
                 </div>
-            </main>
+                </main>
+            </div>
 
             {/* Footer */}
             <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-4 py-3">
                 <div className="container mx-auto max-w-md">
                     <div className="flex items-center justify-around">
-                         <button className="flex flex-col items-center gap-1 text-primary">
+                        <button className="flex flex-col items-center gap-1 text-primary">
                             <Home className="h-5 w-5" />
                             <span className="text-xs font-medium">Inicio</span>
                         </button>

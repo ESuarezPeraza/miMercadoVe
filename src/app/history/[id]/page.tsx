@@ -109,17 +109,17 @@ export default function CartDetailPage() {
                     <section className="pt-6 space-y-4">
                         <div className="bg-white border rounded-lg p-4 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
-                               <h2 className="text-lg font-semibold text-slate-800">Detalles</h2>
-                               <Badge variant={cart.type === 'budget' ? 'secondary' : 'default'}>
-                                   {cart.type === 'budget' ? 'Presupuesto' : 'Compra'}
-                               </Badge>
+                                <h2 className="text-lg font-semibold text-slate-800">Detalles</h2>
+                                <Badge variant={cart.type === 'budget' ? 'secondary' : 'default'}>
+                                    {cart.type === 'budget' ? 'Presupuesto' : 'Compra'}
+                                </Badge>
                             </div>
                             <div className="space-y-2 text-sm text-slate-600">
                                 <div className="flex items-center gap-3">
                                     <Calendar className="h-4 w-4" />
                                     <span>{formatDate(cart.createdAt)}</span>
                                 </div>
-                                 <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3">
                                     <Repeat className="h-4 w-4" />
                                     <span>Tasa: {formatVes(cart.exchangeRate)}</span>
                                 </div>
@@ -132,9 +132,9 @@ export default function CartDetailPage() {
                     </section>
                     
                     {/* Totals */}
-                     <section>
-                         <h3 className="text-lg font-semibold text-slate-900 mb-2">Totales de la Compra</h3>
-                         <div className="grid grid-cols-2 gap-4">
+                    <section>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">Totales de la Compra</h3>
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
                                 <p className="text-xs sm:text-sm font-medium text-slate-600 mb-1">Total Bolívares</p>
                                 <p className="text-xl sm:text-2xl font-bold text-slate-900 break-all">{formatVes(cart.totalVES)}</p>
@@ -150,7 +150,7 @@ export default function CartDetailPage() {
                     <section>
                         <h3 className="text-lg font-semibold text-slate-900 mb-2">Productos</h3>
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
-                           {cart.transactions.map((t: Transaction) => (
+                            {cart.transactions.map((t: Transaction) => (
                                 <div key={t.id} className="flex justify-between items-center p-4">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-slate-900 truncate">{t.description}</p>
