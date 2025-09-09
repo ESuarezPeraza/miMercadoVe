@@ -529,11 +529,11 @@ export function CalculatorScreen() {
             <div className="container mx-auto max-w-md">
                 {/* Header */}
                 <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 px-4 py-4">
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-between">
                         <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
                         <button 
                             onClick={() => setIsRateDialogOpen(true)} 
-                            className="absolute right-4 px-3 py-2 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700 hover:text-slate-900"
+                            className="px-3 py-2 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700 hover:text-slate-900"
                         >
                             <span className="hidden sm:inline">Tasa: </span>
                             {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
