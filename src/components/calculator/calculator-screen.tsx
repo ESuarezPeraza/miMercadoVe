@@ -603,7 +603,7 @@ export function CalculatorScreen() {
                                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
                             >
                                 <Save className="h-4 w-4" />
-                                Guardar Carrito
+                                Guardar
                             </button>
                             <button 
                                 onClick={() => setIsResetDialogOpen(true)}
