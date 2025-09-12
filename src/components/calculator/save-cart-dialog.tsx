@@ -94,13 +94,9 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                             }`}>
                                 <div className="flex items-center p-4">
                                     <RadioGroupItem value="budget" id="budget" className="mr-4" />
-                                    <div className={`p-3 rounded-lg mr-4 ${
-                                        type === 'budget' ? 'bg-blue-100' : 'bg-slate-100'
-                                    }`}>
-                                        <ShoppingCart className={`h-6 w-6 ${
-                                            type === 'budget' ? 'text-blue-600' : 'text-slate-600'
-                                        }`} />
-                                    </div>
+                                    <ShoppingCart className={`h-6 w-6 mr-4 ${
+                                        type === 'budget' ? 'text-blue-600' : 'text-slate-600'
+                                    }`} />
                                     <div className="flex-1 pr-4">
                                         <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Presupuesto
@@ -120,13 +116,9 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                             }`}>
                                 <div className="flex items-center p-4">
                                     <RadioGroupItem value="purchase" id="purchase" className="mr-4" />
-                                    <div className={`p-3 rounded-lg mr-4 ${
-                                        type === 'purchase' ? 'bg-green-100' : 'bg-slate-100'
-                                    }`}>
-                                        <Receipt className={`h-6 w-6 ${
-                                            type === 'purchase' ? 'text-green-600' : 'text-slate-600'
-                                        }`} />
-                                    </div>
+                                    <Receipt className={`h-6 w-6 mr-4 ${
+                                        type === 'purchase' ? 'text-green-600' : 'text-slate-600'
+                                    }`} />
                                     <div className="flex-1 pr-4">
                                         <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Compra Realizada
