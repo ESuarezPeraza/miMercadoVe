@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -19,7 +19,7 @@ interface SaveCartDialogProps {
 
 export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogProps) {
     const [name, setName] = useState('');
-    const [type, setType] = useState<'purchase' | 'budget'>('budget');
+    const [type, setType] = useState<'budget'>('budget');
 
     const handleSave = () => {
         if (!name.trim()) return;
@@ -35,6 +35,14 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
             handleSave();
         }
     };
+    
+    // Reset state when dialog opens
+    useEffect(() => {
+        if (isOpen) {
+            setName('');
+            setType('budget');
+        }
+    }, [isOpen]);
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -91,12 +99,12 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                 }`}
                             >
                                 <div className="flex items-center p-4">
-                                    <div className={`p-2 rounded-full mr-4 ${ type === 'budget' ? 'bg-blue-100' : 'bg-slate-100'}`}>
+                                    <div className={`p-2 rounded-lg mr-4 ${ type === 'budget' ? 'bg-blue-100' : 'bg-slate-100'}`}>
                                         <ShoppingCart className={`h-6 w-6 ${
                                             type === 'budget' ? 'text-blue-600' : 'text-slate-600'
                                         }`} />
                                     </div>
-                                    <div className="flex-1 pr-4">
+                                    <div className="flex-1">
                                         <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Presupuesto
                                         </div>
@@ -117,12 +125,12 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                 }`}
                             >
                                 <div className="flex items-center p-4">
-                                    <div className={`p-2 rounded-full mr-4 ${ type === 'purchase' ? 'bg-green-100' : 'bg-slate-100'}`}>
+                                    <div className={`p-2 rounded-lg mr-4 ${ type === 'purchase' ? 'bg-green-100' : 'bg-slate-100'}`}>
                                         <Receipt className={`h-6 w-6 ${
                                             type === 'purchase' ? 'text-green-600' : 'text-slate-600'
                                         }`} />
                                     </div>
-                                    <div className="flex-1 pr-4">
+                                    <div className="flex-1">
                                         <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Compra Realizada
                                         </div>
