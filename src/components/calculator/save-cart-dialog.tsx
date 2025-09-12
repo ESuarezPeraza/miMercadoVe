@@ -163,7 +163,7 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                         } disabled:bg-slate-300 disabled:cursor-not-allowed`}
                     >
                         <Save className="h-4 w-4 mr-2" />
-                        Guardar {type === 'budget' ? 'Presupuesto' : 'Compra'}
+                        Guardar
                     </Button>
                 </div>
             </DialogContent>
