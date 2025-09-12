@@ -101,7 +101,7 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                             type === 'budget' ? 'text-blue-600' : 'text-slate-600'
                                         }`} />
                                     </div>
-                                    <div className="flex-1">
+                                    <div className="flex-1 pr-4">
                                         <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Presupuesto
                                         </div>
@@ -109,9 +109,6 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                             Para planificar y estimar compras futuras
                                         </p>
                                     </div>
-                                    {type === 'budget' && (
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    )}
                                 </div>
                             </Label>
 
@@ -130,7 +127,7 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                             type === 'purchase' ? 'text-green-600' : 'text-slate-600'
                                         }`} />
                                     </div>
-                                    <div className="flex-1">
+                                    <div className="flex-1 pr-4">
                                         <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Compra Realizada
                                         </div>
@@ -138,9 +135,6 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                             Registro de una compra ya completada
                                         </p>
                                     </div>
-                                    {type === 'purchase' && (
-                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    )}
                                 </div>
                             </Label>
                         </RadioGroup>
