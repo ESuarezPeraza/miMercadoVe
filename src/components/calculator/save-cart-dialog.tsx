@@ -42,12 +42,6 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
             <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden">
                 {/* Header with gradient background */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 text-white relative">
-                    <button
-                        onClick={() => onOpenChange(false)}
-                        className="absolute right-4 top-4 p-1 rounded-full hover:bg-white/20 transition-colors"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/20 rounded-lg">
                             <Save className="h-6 w-6" />
@@ -93,7 +87,7 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                             className="space-y-3"
                         >
                             {/* Budget Option */}
-                            <div className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                            <Label htmlFor="budget" className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md block ${
                                 type === 'budget' 
                                     ? 'border-blue-500 bg-blue-50 shadow-sm' 
                                     : 'border-slate-200 bg-white hover:border-slate-300'
@@ -108,9 +102,9 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                         }`} />
                                     </div>
                                     <div className="flex-1">
-                                        <Label htmlFor="budget" className="text-base font-semibold cursor-pointer text-slate-900">
+                                        <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Presupuesto
-                                        </Label>
+                                        </div>
                                         <p className="text-sm text-slate-500 mt-1">
                                             Para planificar y estimar compras futuras
                                         </p>
@@ -119,10 +113,10 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                     )}
                                 </div>
-                            </div>
+                            </Label>
 
                             {/* Purchase Option */}
-                            <div className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                            <Label htmlFor="purchase" className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md block ${
                                 type === 'purchase' 
                                     ? 'border-green-500 bg-green-50 shadow-sm' 
                                     : 'border-slate-200 bg-white hover:border-slate-300'
@@ -137,9 +131,9 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                         }`} />
                                     </div>
                                     <div className="flex-1">
-                                        <Label htmlFor="purchase" className="text-base font-semibold cursor-pointer text-slate-900">
+                                        <div className="text-base font-semibold cursor-pointer text-slate-900">
                                             Compra Realizada
-                                        </Label>
+                                        </div>
                                         <p className="text-sm text-slate-500 mt-1">
                                             Registro de una compra ya completada
                                         </p>
@@ -148,7 +142,7 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                     )}
                                 </div>
-                            </div>
+                            </Label>
                         </RadioGroup>
                     </div>
                 </div>
