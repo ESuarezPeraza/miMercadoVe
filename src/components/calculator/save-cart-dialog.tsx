@@ -9,8 +9,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ShoppingCart, Receipt, Save, X } from 'lucide-react';
+import { ShoppingCart, Receipt, Save } from 'lucide-react';
 
 interface SaveCartDialogProps {
     isOpen: boolean;
@@ -81,19 +80,17 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                         <Label className="text-sm font-semibold text-slate-700">
                             Tipo de registro
                         </Label>
-                        <RadioGroup 
-                            value={type} 
-                            onValueChange={(value) => setType(value as 'purchase' | 'budget')} 
-                            className="space-y-3"
-                        >
+                        <div className="space-y-3">
                             {/* Budget Option */}
-                            <Label htmlFor="budget" className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md block ${
-                                type === 'budget' 
-                                    ? 'border-blue-500 bg-blue-50 shadow-sm' 
-                                    : 'border-slate-200 bg-white hover:border-slate-300'
-                            }`}>
+                            <button
+                                onClick={() => setType('budget')}
+                                className={`w-full relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md block text-left ${
+                                    type === 'budget' 
+                                        ? 'border-blue-500 bg-blue-50 shadow-sm' 
+                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                }`}
+                            >
                                 <div className="flex items-center p-4">
-                                    <RadioGroupItem value="budget" id="budget" className="mr-4" />
                                     <ShoppingCart className={`h-6 w-6 mr-4 ${
                                         type === 'budget' ? 'text-blue-600' : 'text-slate-600'
                                     }`} />
@@ -106,16 +103,18 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                         </p>
                                     </div>
                                 </div>
-                            </Label>
+                            </button>
 
                             {/* Purchase Option */}
-                            <Label htmlFor="purchase" className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md block ${
-                                type === 'purchase' 
-                                    ? 'border-green-500 bg-green-50 shadow-sm' 
-                                    : 'border-slate-200 bg-white hover:border-slate-300'
-                            }`}>
+                             <button
+                                onClick={() => setType('purchase')}
+                                className={`w-full relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md block text-left ${
+                                    type === 'purchase' 
+                                        ? 'border-green-500 bg-green-50 shadow-sm' 
+                                        : 'border-slate-200 bg-white hover:border-slate-300'
+                                }`}
+                            >
                                 <div className="flex items-center p-4">
-                                    <RadioGroupItem value="purchase" id="purchase" className="mr-4" />
                                     <Receipt className={`h-6 w-6 mr-4 ${
                                         type === 'purchase' ? 'text-green-600' : 'text-slate-600'
                                     }`} />
@@ -128,8 +127,8 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
                                         </p>
                                     </div>
                                 </div>
-                            </Label>
-                        </RadioGroup>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
