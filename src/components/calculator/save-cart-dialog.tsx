@@ -5,13 +5,12 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
-    DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ShoppingCart, Receipt } from 'lucide-react';
+import { ShoppingCart, Receipt, Save, X } from 'lucide-react';
 
 interface SaveCartDialogProps {
     isOpen: boolean;
@@ -40,59 +39,142 @@ export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogP
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Guardar Carrito</DialogTitle>
-                    <DialogDescription>
-                        Guarda tu carrito actual como una compra realizada o un presupuesto para el futuro.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="cart-name" className="text-right">
-                            Nombre
-                        </Label>
-                        <Input
-                            id="cart-name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Ej: Compra del supermercado"
-                            className="col-span-3"
-                        />
+            <DialogContent className="sm:max-w-[480px] p-0 gap-0 overflow-hidden">
+                {/* Header with gradient background */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 text-white relative">
+                    <button
+                        onClick={() => onOpenChange(false)}
+                        className="absolute right-4 top-4 p-1 rounded-full hover:bg-white/20 transition-colors"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white/20 rounded-lg">
+                            <Save className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <DialogTitle className="text-xl font-bold text-white mb-1">
+                                Guardar Carrito
+                            </DialogTitle>
+                            <DialogDescription className="text-blue-100 text-sm">
+                                Guarda tu carrito como una compra realizada o un presupuesto futuro
+                            </DialogDescription>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">
-                            Tipo
+                </div>
+
+                {/* Content */}
+                <div className="px-6 py-6 space-y-6">
+                    {/* Name Input */}
+                    <div className="space-y-3">
+                        <Label htmlFor="cart-name" className="text-sm font-semibold text-slate-700">
+                            Nombre del carrito
                         </Label>
-                        <RadioGroup value={type} onValueChange={(value) => setType(value as 'purchase' | 'budget')} className="col-span-3">
-                            <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-slate-50">
-                                <RadioGroupItem value="budget" id="budget" />
-                                <ShoppingCart className="h-4 w-4 text-blue-600" />
-                                <div className="flex-1">
-                                    <Label htmlFor="budget" className="font-medium cursor-pointer">Presupuesto</Label>
-                                    <p className="text-xs text-slate-500">Para planificar compras futuras</p>
+                        <div className="relative">
+                            <Input
+                                id="cart-name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Ej: Compra del supermercado"
+                                className="h-12 pl-4 pr-4 text-base border-2 border-slate-200 focus:border-blue-500 focus:ring-0 rounded-xl transition-colors"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Type Selection */}
+                    <div className="space-y-3">
+                        <Label className="text-sm font-semibold text-slate-700">
+                            Tipo de registro
+                        </Label>
+                        <RadioGroup 
+                            value={type} 
+                            onValueChange={(value) => setType(value as 'purchase' | 'budget')} 
+                            className="space-y-3"
+                        >
+                            {/* Budget Option */}
+                            <div className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                                type === 'budget' 
+                                    ? 'border-blue-500 bg-blue-50 shadow-sm' 
+                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                            }`}>
+                                <div className="flex items-center p-4">
+                                    <RadioGroupItem value="budget" id="budget" className="mr-4" />
+                                    <div className={`p-3 rounded-lg mr-4 ${
+                                        type === 'budget' ? 'bg-blue-100' : 'bg-slate-100'
+                                    }`}>
+                                        <ShoppingCart className={`h-6 w-6 ${
+                                            type === 'budget' ? 'text-blue-600' : 'text-slate-600'
+                                        }`} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <Label htmlFor="budget" className="text-base font-semibold cursor-pointer text-slate-900">
+                                            Presupuesto
+                                        </Label>
+                                        <p className="text-sm text-slate-500 mt-1">
+                                            Para planificar y estimar compras futuras
+                                        </p>
+                                    </div>
+                                    {type === 'budget' && (
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    )}
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-slate-50">
-                                <RadioGroupItem value="purchase" id="purchase" />
-                                <Receipt className="h-4 w-4 text-green-600" />
-                                <div className="flex-1">
-                                    <Label htmlFor="purchase" className="font-medium cursor-pointer">Compra Realizada</Label>
-                                    <p className="text-xs text-slate-500">Registro de compra completada</p>
+
+                            {/* Purchase Option */}
+                            <div className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${
+                                type === 'purchase' 
+                                    ? 'border-green-500 bg-green-50 shadow-sm' 
+                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                            }`}>
+                                <div className="flex items-center p-4">
+                                    <RadioGroupItem value="purchase" id="purchase" className="mr-4" />
+                                    <div className={`p-3 rounded-lg mr-4 ${
+                                        type === 'purchase' ? 'bg-green-100' : 'bg-slate-100'
+                                    }`}>
+                                        <Receipt className={`h-6 w-6 ${
+                                            type === 'purchase' ? 'text-green-600' : 'text-slate-600'
+                                        }`} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <Label htmlFor="purchase" className="text-base font-semibold cursor-pointer text-slate-900">
+                                            Compra Realizada
+                                        </Label>
+                                        <p className="text-sm text-slate-500 mt-1">
+                                            Registro de una compra ya completada
+                                        </p>
+                                    </div>
+                                    {type === 'purchase' && (
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    )}
                                 </div>
                             </div>
                         </RadioGroup>
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+
+                {/* Footer */}
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex gap-3">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => onOpenChange(false)}
+                        className="flex-1 h-11 font-medium border-2 hover:bg-slate-100"
+                    >
                         Cancelar
                     </Button>
-                    <Button onClick={handleSave} disabled={!name.trim()}>
-                        Guardar
+                    <Button 
+                        onClick={handleSave} 
+                        disabled={!name.trim()}
+                        className={`flex-1 h-11 font-semibold transition-all ${
+                            type === 'budget' 
+                                ? 'bg-blue-600 hover:bg-blue-700' 
+                                : 'bg-green-600 hover:bg-green-700'
+                        } disabled:bg-slate-300 disabled:cursor-not-allowed`}
+                    >
+                        <Save className="h-4 w-4 mr-2" />
+                        Guardar {type === 'budget' ? 'Presupuesto' : 'Compra'}
                     </Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );
