@@ -26,8 +26,28 @@ import { Switch } from "@/components/ui/switch";
 import { Home, Save, History } from "lucide-react";
 
 const LOCAL_STORAGE_RATE_KEY = "exchangeRate";
+const LOCAL_STORAGE_RATE_DATE_KEY = "exchangeRateDate";
 const LOCAL_STORAGE_TRANSACTIONS_KEY = "transactionsList";
 const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
+
+const fetchExchangeRate = async (): Promise<{ tasa: number; fecha: string } | null> => {
+    try {
+        const response = await fetch("https://bcvapi.tech/api/v1/dolar");
+        if (!response.ok) throw new Error("Failed to fetch rate");
+        const data = await response.json();
+        return { tasa: data.tasa, fecha: data.fecha };
+    } catch (error) {
+        console.error("Error fetching exchange rate:", error);
+        return null;
+    }
+};
+
+const getCurrentDateVenezuela = (): string => {
+    const now = new Date();
+    // Venezuela is UTC-4
+    const venezuelaTime = new Date(now.getTime() - (4 * 60 * 60 * 1000));
+    return venezuelaTime.toISOString().split('T')[0]; // YYYY-MM-DD
+};
 
 export interface SavedCart {
     id: string;
@@ -42,6 +62,7 @@ export interface SavedCart {
 
 export function CalculatorScreen() {
     const [rateInput, setRateInput] = useState("");
+    const [rateDate, setRateDate] = useState<string>("");
     const [persistedRate, setPersistedRate] = useState<Big | null>(null);
     const [totalVES, setTotalVES] = useState(new Big(0));
     const [totalUSD, setTotalUSD] = useState(new Big(0));
@@ -51,7 +72,6 @@ export function CalculatorScreen() {
     const [quantity, setQuantity] = useState("1");
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
-    const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [isSaveCartDialogOpen, setIsSaveCartDialogOpen] = useState(false);
@@ -62,50 +82,94 @@ export function CalculatorScreen() {
     const { toast } = useToast();
 
     useEffect(() => {
-        try {
-            // Load exchange rate
-            const savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
-            if (savedRate) {
-                const rate = new Big(savedRate);
-                if (rate.gt(0)) {
-                    setPersistedRate(rate);
-                    setRateInput(rate.toString());
+        const loadExchangeRate = async () => {
+            try {
+                const savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
+                const savedDate = localStorage.getItem(LOCAL_STORAGE_RATE_DATE_KEY);
+                const currentDate = getCurrentDateVenezuela();
+
+                if (savedRate && savedDate === currentDate) {
+                    const rate = new Big(savedRate);
+                    if (rate.gt(0)) {
+                        setPersistedRate(rate);
+                        setRateInput(rate.toString());
+                        setRateDate(savedDate);
+                    }
+                } else {
+                    // Fetch new rate
+                    const data = await fetchExchangeRate();
+                    if (data) {
+                        const rate = new Big(data.tasa);
+                        setPersistedRate(rate);
+                        setRateInput(rate.toString());
+                        setRateDate(data.fecha);
+                        localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                        localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, data.fecha);
+                    } else if (savedRate) {
+                        // Fallback to saved rate if fetch fails
+                        const rate = new Big(savedRate);
+                        setPersistedRate(rate);
+                        setRateInput(rate.toString());
+                        setRateDate(savedDate || "");
+                        toast({
+                            title: "Error de conexión",
+                            description: "No se pudo actualizar la tasa. Usando tasa guardada.",
+                            variant: "destructive",
+                        });
+                    } else {
+                        toast({
+                            title: "Error",
+                            description: "No se pudo obtener la tasa de cambio.",
+                            variant: "destructive",
+                        });
+                    }
                 }
-            } else {
-                setIsRateDialogOpen(true);
+            } catch (error) {
+                console.error("Could not load exchange rate", error);
+                toast({
+                    title: "Error de Carga",
+                    description: "No se pudo cargar la tasa de cambio.",
+                    variant: "destructive",
+                });
             }
+        };
 
-            // Load transactions
-            const savedTransactions = localStorage.getItem(LOCAL_STORAGE_TRANSACTIONS_KEY);
-            if (savedTransactions) {
-                const parsedTransactions = JSON.parse(savedTransactions).map((t: any) => ({
-                    ...t,
-                    ves: new Big(t.ves),
-                    usd: new Big(t.usd),
-                    // Reconstruct Big.js instances for details
-                    ...(t.unitVes && { unitVes: new Big(t.unitVes) }),
-                    ...(t.unitUsd && { unitUsd: new Big(t.unitUsd) }),
-                    ...(t.weight && { weight: new Big(t.weight) }),
-                    ...(t.pricePerKgVes && { pricePerKgVes: new Big(t.pricePerKgVes) }),
-                    ...(t.pricePerKgUsd && { pricePerKgUsd: new Big(t.pricePerKgUsd) }),
-                }));
-                setTransactions(parsedTransactions);
+        const loadTransactions = () => {
+            try {
+                // Load transactions
+                const savedTransactions = localStorage.getItem(LOCAL_STORAGE_TRANSACTIONS_KEY);
+                if (savedTransactions) {
+                    const parsedTransactions = JSON.parse(savedTransactions).map((t: any) => ({
+                        ...t,
+                        ves: new Big(t.ves),
+                        usd: new Big(t.usd),
+                        // Reconstruct Big.js instances for details
+                        ...(t.unitVes && { unitVes: new Big(t.unitVes) }),
+                        ...(t.unitUsd && { unitUsd: new Big(t.unitUsd) }),
+                        ...(t.weight && { weight: new Big(t.weight) }),
+                        ...(t.pricePerKgVes && { pricePerKgVes: new Big(t.pricePerKgVes) }),
+                        ...(t.pricePerKgUsd && { pricePerKgUsd: new Big(t.pricePerKgUsd) }),
+                    }));
+                    setTransactions(parsedTransactions);
 
-                // Recalculate totals from loaded transactions
-                const newTotalVES = parsedTransactions.reduce((acc: Big, t: Transaction) => acc.plus(t.ves), new Big(0));
-                const newTotalUSD = parsedTransactions.reduce((acc: Big, t: Transaction) => acc.plus(t.usd), new Big(0));
-                setTotalVES(newTotalVES);
-                setTotalUSD(newTotalUSD);
+                    // Recalculate totals from loaded transactions
+                    const newTotalVES = parsedTransactions.reduce((acc: Big, t: Transaction) => acc.plus(t.ves), new Big(0));
+                    const newTotalUSD = parsedTransactions.reduce((acc: Big, t: Transaction) => acc.plus(t.usd), new Big(0));
+                    setTotalVES(newTotalVES);
+                    setTotalUSD(newTotalUSD);
+                }
+            } catch (error) {
+                console.error("Could not read from localStorage", error);
+                toast({
+                    title: "Error de Carga",
+                    description: "No se pudieron cargar los datos guardados. Empezando desde cero.",
+                    variant: "destructive",
+                });
             }
+        };
 
-        } catch (error) {
-            console.error("Could not read from localStorage", error);
-            toast({
-                title: "Error de Carga",
-                description: "No se pudieron cargar los datos guardados. Empezando desde cero.",
-                variant: "destructive",
-            });
-        }
+        loadExchangeRate();
+        loadTransactions();
         setIsInitialized(true);
     }, []);
 
@@ -136,38 +200,14 @@ export function CalculatorScreen() {
     }, [transactions, isInitialized]);
 
 
-    const handleSaveRate = () => {
-        try {
-            const newRate = new Big(rateInput);
-            if (newRate.lte(0)) {
-                toast({
-                    title: "Error",
-                    description: "Por favor, introduce una tasa de cambio válida y positiva.",
-                    variant: "destructive",
-                });
-                return;
-            }
-            setPersistedRate(newRate);
-            localStorage.setItem(LOCAL_STORAGE_RATE_KEY, newRate.toString());
-            setIsRateDialogOpen(false);
-        } catch (error) {
-             console.error("Could not write to localStorage or invalid Big number", error);
-             toast({
-                title: "Error",
-                description: "No se pudo guardar la tasa de cambio. Introduce un número válido.",
-                variant: "destructive",
-            });
-        }
-    };
 
     const addAmount = () => {
         if (!persistedRate) {
             toast({
-                title: "Acción requerida",
-                description: "Primero debes guardar una tasa de cambio.",
+                title: "Error",
+                description: "La tasa de cambio no está disponible. Intenta recargar la página.",
                 variant: "destructive",
             });
-            setIsRateDialogOpen(true);
             return;
         }
 
@@ -485,13 +525,21 @@ export function CalculatorScreen() {
             <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
                 <div className="h-10 flex items-center justify-between">
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
-                    <button 
-                        onClick={() => setIsRateDialogOpen(true)} 
-                        className="px-3 py-2 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow text-sm font-medium text-slate-700 hover:text-slate-900"
-                    >
-                        <span className="hidden sm:inline">Tasa: </span>
-                        {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </button>
+                    <div className="text-right">
+                        <div className="text-sm text-slate-600">Tasa del día</div>
+                        <div className="text-lg font-semibold text-slate-900">
+                            {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                        {rateDate && (
+                            <div className="text-xs text-slate-500">
+                                {new Date(rateDate).toLocaleDateString('es-VE', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
             
@@ -586,24 +634,6 @@ export function CalculatorScreen() {
                 onConfirm={handleReset}
             />
 
-            <Dialog open={isRateDialogOpen} onOpenChange={persistedRate ? setIsRateDialogOpen : undefined}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Establecer Tasa de Cambio</DialogTitle>
-                        <DialogDescription>Introduce la tasa de cambio actual entre Bolívares y Dólares.</DialogDescription>
-                    </DialogHeader>
-                    <Input
-                        type="number"
-                        placeholder="Tasa de cambio"
-                        value={rateInput}
-                        onChange={(e) => setRateInput(e.target.value)}
-                        className="mt-4"
-                    />
-                    <DialogFooter>
-                        <Button onClick={handleSaveRate}>Guardar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
             <SaveCartDialog
                 isOpen={isSaveCartDialogOpen}

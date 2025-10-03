@@ -7,11 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, Tag, Repeat } from 'lucide-react';
 import { formatVes, formatUsd } from '@/lib/formatters';
-import type { SavedCart, Transaction as OriginalTransaction } from '@/components/calculator/calculator-screen';
+import type { SavedCart } from '@/components/calculator/calculator-screen';
+import type { Transaction } from '@/components/calculator/transaction-list';
 import Big from 'big.js';
 
-// Re-define Transaction type here to avoid circular dependencies if we move it
-type Transaction = OriginalTransaction;
 
 const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
 

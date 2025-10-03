@@ -19,7 +19,7 @@ interface SaveCartDialogProps {
 
 export function SaveCartDialog({ isOpen, onOpenChange, onSave }: SaveCartDialogProps) {
     const [name, setName] = useState('');
-    const [type, setType] = useState<'budget'>('budget');
+    const [type, setType] = useState<'budget' | 'purchase'>('budget');
 
     const handleSave = () => {
         if (!name.trim()) return;
