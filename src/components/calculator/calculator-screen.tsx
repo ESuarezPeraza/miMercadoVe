@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Home, Save, History } from "lucide-react";
+import { Home, Save, History, RefreshCw, Settings } from "lucide-react";
 
 const LOCAL_STORAGE_RATE_KEY = "exchangeRate";
 const LOCAL_STORAGE_RATE_DATE_KEY = "exchangeRateDate";
@@ -75,6 +75,8 @@ export function CalculatorScreen() {
     const [isInitialized, setIsInitialized] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [isSaveCartDialogOpen, setIsSaveCartDialogOpen] = useState(false);
+    const [isCustomRateDialogOpen, setIsCustomRateDialogOpen] = useState(false);
+    const [customRateInput, setCustomRateInput] = useState("");
     
     const [isWeightBased, setIsWeightBased] = useState(false);
     const [weight, setWeight] = useState("");
@@ -503,6 +505,61 @@ export function CalculatorScreen() {
         }
     };
 
+    const refreshRate = async () => {
+        try {
+            const data = await fetchExchangeRate();
+            if (data) {
+                const rate = new Big(data.tasa);
+                setPersistedRate(rate);
+                setRateInput(rate.toString());
+                setRateDate(data.fecha);
+                localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, data.fecha);
+                toast({
+                    title: "Tasa actualizada",
+                    description: "La tasa del dólar ha sido actualizada.",
+                });
+            } else {
+                toast({
+                    title: "Error",
+                    description: "No se pudo obtener la nueva tasa.",
+                    variant: "destructive",
+                });
+            }
+        } catch (error) {
+            console.error("Error refreshing rate:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo actualizar la tasa.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleCustomRate = () => {
+        try {
+            const rate = new Big(customRateInput);
+            if (rate.lte(0)) throw new Error();
+            setPersistedRate(rate);
+            setRateInput(rate.toString());
+            setRateDate("");
+            localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+            localStorage.removeItem(LOCAL_STORAGE_RATE_DATE_KEY);
+            setIsCustomRateDialogOpen(false);
+            setCustomRateInput("");
+            toast({
+                title: "Tasa personalizada",
+                description: "La tasa ha sido configurada manualmente.",
+            });
+        } catch (e) {
+            toast({
+                title: "Error",
+                description: "Por favor, introduce una tasa válida.",
+                variant: "destructive",
+            });
+        }
+    };
+
     if (!isInitialized) {
         return (
             <div className="min-h-screen bg-slate-50">
@@ -528,22 +585,32 @@ export function CalculatorScreen() {
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Header */}
             <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
-                <div className="h-10 flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
-                    <div className="text-right">
-                        <div className="text-sm text-slate-600">Tasa del día</div>
-                        <div className="text-lg font-semibold text-slate-900">
-                            {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                        {rateDate && (
-                            <div className="text-xs text-slate-500">
-                                {new Date(rateDate).toLocaleDateString('es-VE', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
+                    <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                            <div className="text-sm text-slate-600">Tasa del día</div>
+                            <div className="text-lg font-semibold text-slate-900">
+                                {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
-                        )}
+                            {rateDate && (
+                                <div className="text-xs text-slate-500">
+                                    {new Date(rateDate).toLocaleDateString('es-VE', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-col space-y-1">
+                            <Button variant="outline" size="sm" onClick={refreshRate} title="Actualizar tasa">
+                                <RefreshCw className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => setIsCustomRateDialogOpen(true)} title="Tasa personalizada">
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -653,6 +720,36 @@ export function CalculatorScreen() {
                     onClose={() => setEditingTransaction(null)}
                 />
             )}
+
+            <Dialog open={isCustomRateDialogOpen} onOpenChange={setIsCustomRateDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Configurar tasa personalizada</DialogTitle>
+                        <DialogDescription>
+                            Introduce la tasa del dólar que deseas usar.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <Label htmlFor="custom-rate">Tasa (VES/USD)</Label>
+                        <Input
+                            id="custom-rate"
+                            type="number"
+                            step="0.01"
+                            value={customRateInput}
+                            onChange={(e) => setCustomRateInput(e.target.value)}
+                            placeholder="Ej: 36.50"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCustomRateDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleCustomRate}>
+                            Aplicar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
