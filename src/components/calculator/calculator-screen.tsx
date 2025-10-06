@@ -586,29 +586,53 @@ export function CalculatorScreen() {
             {/* Header */}
             <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Mi Mercado VE</h1>
-                    <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                            <div className="text-sm text-slate-600">Tasa del día</div>
-                            <div className="text-lg font-semibold text-slate-900">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                            <span className="text-white font-bold text-lg">M</span>
+                        </div>
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                                Mi Mercado VE
+                            </h1>
+                            <p className="text-xs text-slate-500 -mt-1">Calculadora de precios</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 text-right min-w-[140px]">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Tasa USD</span>
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            </div>
+                            <div className="text-lg font-bold text-slate-900 leading-tight">
                                 {parseFloat(rateInput || '0').toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                             {rateDate && (
-                                <div className="text-xs text-slate-500">
+                                <div className="text-xs text-slate-400 mt-1">
                                     {new Date(rateDate).toLocaleDateString('es-VE', {
-                                        year: 'numeric',
-                                        month: 'long',
+                                        month: 'short',
                                         day: 'numeric'
                                     })}
                                 </div>
                             )}
                         </div>
-                        <div className="flex flex-col space-y-1">
-                            <Button variant="outline" size="sm" onClick={refreshRate} title="Actualizar tasa">
-                                <RefreshCw className="h-4 w-4" />
+                        <div className="flex flex-col space-y-2">
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={refreshRate} 
+                                title="Actualizar tasa"
+                                className="h-9 w-9 p-0 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 shadow-sm"
+                            >
+                                <RefreshCw className="h-4 w-4 text-blue-600" />
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => setIsCustomRateDialogOpen(true)} title="Tasa personalizada">
-                                <Settings className="h-4 w-4" />
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => setIsCustomRateDialogOpen(true)} 
+                                title="Tasa personalizada"
+                                className="h-9 w-9 p-0 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 shadow-sm"
+                            >
+                                <Settings className="h-4 w-4 text-slate-600" />
                             </Button>
                         </div>
                     </div>
