@@ -19,9 +19,8 @@ const nextConfig: NextConfig = {
     ],
   },
   devIndicators: {
-    allowedDevOrigins: [
-        '*.cluster-ocv3ypmyqfbqysslgd7zlhmxek.cloudworkstations.dev',
-    ]
+    buildActivity: true,
+    buildActivityPosition: 'bottom-right'
   }
 };
 

@@ -49,6 +49,37 @@ const getCurrentDateVenezuela = (): string => {
     return venezuelaTime.toISOString().split('T')[0]; // YYYY-MM-DD
 };
 
+const formatRateDateString = (dateStr: string): string => {
+    if (!dateStr) return "";
+
+    // If API returns a date-only string like YYYY-MM-DD, format it manually to avoid
+    // JS Date treating it as UTC and shifting the day depending on timezone.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [y, m, d] = dateStr.split("-");
+        const months = [
+            'enero','febrero','marzo','abril','mayo','junio',
+            'julio','agosto','septiembre','octubre','noviembre','diciembre'
+        ];
+        const monthName = months[Number(m) - 1] || m;
+        return `${Number(d)} de ${monthName} de ${y}`;
+    }
+
+    // Otherwise try to parse the date and present it in Venezuela timezone
+    const parsed = new Date(dateStr);
+    if (isNaN(parsed.getTime())) return dateStr;
+    try {
+        return parsed.toLocaleDateString('es-VE', {
+            timeZone: 'America/Caracas',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    } catch (e) {
+        // Fallback
+        return parsed.toLocaleDateString('es-VE');
+    }
+};
+
 export interface SavedCart {
     id: string;
     name: string;
@@ -595,11 +626,7 @@ export function CalculatorScreen() {
                             </div>
                             {rateDate && (
                                 <div className="text-xs text-slate-500">
-                                    {new Date(rateDate).toLocaleDateString('es-VE', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
+                                    {formatRateDateString(rateDate)}
                                 </div>
                             )}
                         </div>
