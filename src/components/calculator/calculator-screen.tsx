@@ -117,29 +117,12 @@ export function CalculatorScreen() {
     useEffect(() => {
         const loadExchangeRate = async () => {
             try {
-                const savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
-                const savedDate = localStorage.getItem(LOCAL_STORAGE_RATE_DATE_KEY);
-
-                // Always try to fetch new rate first
                 const data = await fetchExchangeRate();
                 if (data) {
                     const rate = new Big(data.tasa);
                     setPersistedRate(rate);
                     setRateInput(rate.toString());
                     setRateDate(data.fecha);
-                    localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
-                    localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, data.fecha);
-                } else if (savedRate) {
-                    // Fallback to saved rate if fetch fails
-                    const rate = new Big(savedRate);
-                    setPersistedRate(rate);
-                    setRateInput(rate.toString());
-                    setRateDate(savedDate || "");
-                    toast({
-                        title: "Error de conexión",
-                        description: "No se pudo actualizar la tasa. Usando tasa guardada.",
-                        variant: "destructive",
-                    });
                 } else {
                     toast({
                         title: "Error",
@@ -149,26 +132,11 @@ export function CalculatorScreen() {
                 }
             } catch (error) {
                 console.error("Could not load exchange rate", error);
-                // If fetch fails, try to use saved rate
-                const savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
-                const savedDate = localStorage.getItem(LOCAL_STORAGE_RATE_DATE_KEY);
-                if (savedRate) {
-                    const rate = new Big(savedRate);
-                    setPersistedRate(rate);
-                    setRateInput(rate.toString());
-                    setRateDate(savedDate || "");
-                    toast({
-                        title: "Error de conexión",
-                        description: "No se pudo actualizar la tasa. Usando tasa guardada.",
-                        variant: "destructive",
-                    });
-                } else {
-                    toast({
-                        title: "Error de Carga",
-                        description: "No se pudo cargar la tasa de cambio.",
-                        variant: "destructive",
-                    });
-                }
+                toast({
+                    title: "Error de Carga",
+                    description: "No se pudo cargar la tasa de cambio.",
+                    variant: "destructive",
+                });
             }
         };
 
@@ -544,8 +512,6 @@ export function CalculatorScreen() {
                 setPersistedRate(rate);
                 setRateInput(rate.toString());
                 setRateDate(data.fecha);
-                localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
-                localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, data.fecha);
                 toast({
                     title: "Tasa actualizada",
                     description: "La tasa del dólar ha sido actualizada.",
