@@ -32,7 +32,7 @@ const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
 
 const fetchExchangeRate = async (): Promise<{ tasa: number; fecha: string } | null> => {
     try {
-        const response = await fetch("https://bcvapi.tech/api/v1/dolar");
+        const response = await fetch(`https://bcvapi.tech/api/v1/dolar?t=${Date.now()}`);
         if (!response.ok) throw new Error("Failed to fetch rate");
         const data = await response.json();
         return { tasa: data.tasa, fecha: data.fecha };
