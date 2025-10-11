@@ -30,6 +30,9 @@ const LOCAL_STORAGE_RATE_DATE_KEY = "exchangeRateDate";
 const LOCAL_STORAGE_TRANSACTIONS_KEY = "transactionsList";
 const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
 
+const DEFAULT_RATE = "193.30";
+const DEFAULT_RATE_DATE = "2024-10-11"; // Viernes anterior
+
 const fetchExchangeRate = async (): Promise<{ tasa: number; fecha: string } | null> => {
     try {
         const response = await fetch(`https://bcvapi.tech/api/v1/dolar?t=${Date.now()}`);
@@ -99,8 +102,17 @@ export function CalculatorScreen() {
     useEffect(() => {
         const loadExchangeRate = async () => {
             try {
-                const savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
-                const savedDate = localStorage.getItem(LOCAL_STORAGE_RATE_DATE_KEY);
+                let savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
+                let savedDate = localStorage.getItem(LOCAL_STORAGE_RATE_DATE_KEY);
+
+                // Initialize with default rate if none exists
+                if (!savedRate) {
+                    localStorage.setItem(LOCAL_STORAGE_RATE_KEY, DEFAULT_RATE);
+                    localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, DEFAULT_RATE_DATE);
+                    savedRate = DEFAULT_RATE;
+                    savedDate = DEFAULT_RATE_DATE;
+                }
+
                 const { date: currentDate, day: currentDay, hour: currentHour } = getCurrentDateTimeVenezuela();
 
                 if (savedRate && savedDate === currentDate) {
