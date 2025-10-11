@@ -536,7 +536,10 @@ export function CalculatorScreen() {
                 const rate = new Big(data.tasa);
                 setPersistedRate(rate);
                 setRateInput(rate.toString());
-                setRateDate(data.fecha);
+                const currentDate = getCurrentDateVenezuela();
+                setRateDate(currentDate);
+                localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, currentDate);
                 toast({
                     title: "Tasa actualizada",
                     description: "La tasa del dólar ha sido actualizada.",
@@ -604,7 +607,7 @@ export function CalculatorScreen() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50 flex flex-col" suppressHydrationWarning>
             {/* Header */}
             <header className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 py-4">
                 <div className="flex items-center justify-between">
@@ -617,7 +620,11 @@ export function CalculatorScreen() {
                             </div>
                             {rateDate && (
                                 <div className="text-xs text-slate-500">
-                                    {formatRateDateString(rateDate)}
+                                    {new Date(rateDate).toLocaleDateString('es-VE', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
                                 </div>
                             )}
                         </div>
