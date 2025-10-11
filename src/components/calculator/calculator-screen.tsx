@@ -42,42 +42,24 @@ const fetchExchangeRate = async (): Promise<{ tasa: number; fecha: string } | nu
     }
 };
 
-const getCurrentDateVenezuela = (): string => {
+const getCurrentDateTimeVenezuela = () => {
     const now = new Date();
     // Venezuela is UTC-4
     const venezuelaTime = new Date(now.getTime() - (4 * 60 * 60 * 1000));
-    return venezuelaTime.toISOString().split('T')[0]; // YYYY-MM-DD
+    const date = venezuelaTime.toISOString().split('T')[0]; // YYYY-MM-DD
+    const day = venezuelaTime.getUTCDay(); // 0=Sunday, 1=Monday, etc.
+    const hour = venezuelaTime.getUTCHours();
+    return { date, day, hour };
 };
 
-const formatRateDateString = (dateStr: string): string => {
-    if (!dateStr) return "";
+const getCurrentDateVenezuela = (): string => {
+    return getCurrentDateTimeVenezuela().date;
+};
 
-    // If API returns a date-only string like YYYY-MM-DD, format it manually to avoid
-    // JS Date treating it as UTC and shifting the day depending on timezone.
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        const [y, m, d] = dateStr.split("-");
-        const months = [
-            'enero','febrero','marzo','abril','mayo','junio',
-            'julio','agosto','septiembre','octubre','noviembre','diciembre'
-        ];
-        const monthName = months[Number(m) - 1] || m;
-        return `${Number(d)} de ${monthName} de ${y}`;
-    }
-
-    // Otherwise try to parse the date and present it in Venezuela timezone
-    const parsed = new Date(dateStr);
-    if (isNaN(parsed.getTime())) return dateStr;
-    try {
-        return parsed.toLocaleDateString('es-VE', {
-            timeZone: 'America/Caracas',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    } catch (e) {
-        // Fallback
-        return parsed.toLocaleDateString('es-VE');
-    }
+const shouldUpdateRate = (day: number, hour: number): boolean => {
+    if (day === 1) return true; // Monday
+    if (day >= 2 && day <= 5) return hour < 16; // Tue-Fri before 4 PM
+    return false; // Sat-Sun
 };
 
 export interface SavedCart {
@@ -117,18 +99,61 @@ export function CalculatorScreen() {
     useEffect(() => {
         const loadExchangeRate = async () => {
             try {
-                const data = await fetchExchangeRate();
-                if (data) {
-                    const rate = new Big(data.tasa);
-                    setPersistedRate(rate);
-                    setRateInput(rate.toString());
-                    setRateDate(data.fecha);
+                const savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
+                const savedDate = localStorage.getItem(LOCAL_STORAGE_RATE_DATE_KEY);
+                const { date: currentDate, day: currentDay, hour: currentHour } = getCurrentDateTimeVenezuela();
+
+                if (savedRate && savedDate === currentDate) {
+                    const rate = new Big(savedRate);
+                    if (rate.gt(0)) {
+                        setPersistedRate(rate);
+                        setRateInput(rate.toString());
+                        setRateDate(savedDate);
+                    }
                 } else {
-                    toast({
-                        title: "Error",
-                        description: "No se pudo obtener la tasa de cambio.",
-                        variant: "destructive",
-                    });
+                    // Check if should update
+                    if (shouldUpdateRate(currentDay, currentHour)) {
+                        const data = await fetchExchangeRate();
+                        if (data) {
+                            const rate = new Big(data.tasa);
+                            setPersistedRate(rate);
+                            setRateInput(rate.toString());
+                            setRateDate(currentDate);
+                            localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                            localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, currentDate);
+                        } else if (savedRate) {
+                            // Fallback to saved rate if fetch fails
+                            const rate = new Big(savedRate);
+                            setPersistedRate(rate);
+                            setRateInput(rate.toString());
+                            setRateDate(savedDate || "");
+                            toast({
+                                title: "Error de conexión",
+                                description: "No se pudo actualizar la tasa. Usando tasa guardada.",
+                                variant: "destructive",
+                            });
+                        } else {
+                            toast({
+                                title: "Error",
+                                description: "No se pudo obtener la tasa de cambio.",
+                                variant: "destructive",
+                            });
+                        }
+                    } else {
+                        // Use saved rate
+                        if (savedRate) {
+                            const rate = new Big(savedRate);
+                            setPersistedRate(rate);
+                            setRateInput(rate.toString());
+                            setRateDate(savedDate || "");
+                        } else {
+                            toast({
+                                title: "Error",
+                                description: "No hay tasa guardada disponible. Actualiza durante la semana.",
+                                variant: "destructive",
+                            });
+                        }
+                    }
                 }
             } catch (error) {
                 console.error("Could not load exchange rate", error);
