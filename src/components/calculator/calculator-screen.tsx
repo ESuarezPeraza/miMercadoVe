@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DateTime } from "luxon";
 import Big from "big.js";
 import Link from 'next/link';
 import { TotalsDisplay } from "./totals-display";
@@ -30,33 +31,92 @@ const LOCAL_STORAGE_RATE_DATE_KEY = "exchangeRateDate";
 const LOCAL_STORAGE_TRANSACTIONS_KEY = "transactionsList";
 const LOCAL_STORAGE_SAVED_CARTS_KEY = "savedCarts";
 
-const DEFAULT_RATE = "193.30";
-const DEFAULT_RATE_DATE = "2024-10-11"; // Viernes anterior
+const DEFAULT_RATE = "0.00";
 
-const fetchExchangeRate = async (): Promise<{ tasa: number; fecha: string } | null> => {
+const fetchExchangeRate = async (): Promise<{ tasa: number; fecha: string }> => {
     try {
-        const response = await fetch(`https://bcvapi.tech/api/v1/dolar?t=${Date.now()}`);
-        if (!response.ok) throw new Error("Failed to fetch rate");
-        const data = await response.json();
-        return { tasa: data.tasa, fecha: data.fecha };
+        // Fecha efectiva en Venezuela (robusta con luxon)
+        const { date: effectiveDate, venezuelaNow } = getVenezuelaNow();
+
+        // Pedimos histórico (últimos 7 días por seguridad)
+        const fromDate = venezuelaNow.minus({ days: 7 });
+        const from = fromDate.toISODate();
+        const to = effectiveDate;
+
+        const url = `https://api.dolarvzla.com/public/exchange-rate/list?from=${from}&to=${to}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch historical rates");
+        const raw = await response.json();
+
+        // Aceptar distintas formas de respuesta: array directo, { data: [] }, { rates: [] }
+        let dataArray: any[] = [];
+        if (Array.isArray(raw)) dataArray = raw;
+        else if (Array.isArray(raw.data)) dataArray = raw.data;
+        else if (Array.isArray(raw.rates)) dataArray = raw.rates;
+        else if (Array.isArray(raw.result)) dataArray = raw.result;
+
+        // Si no obtuvimos array válido, devolver null
+        if (!Array.isArray(dataArray) || dataArray.length === 0) {
+            return { tasa: Number(DEFAULT_RATE), fecha: "" };
+        }
+
+        // Normalizar y ordenar
+        const entries = dataArray
+            .filter((e: any) => e && typeof e.date === 'string' && (typeof e.usd === 'number' || typeof e.usd === 'string'))
+            .map((e: any) => ({ date: e.date.trim(), usd: Number(String(e.usd).replace(/,/g, '.')) }))
+            .sort((a: any, b: any) => a.date.localeCompare(b.date));
+
+        if (entries.length === 0) return { tasa: Number(DEFAULT_RATE), fecha: "" };
+
+        // Selección estricta: solo usar la tasa cuya fecha sea exactamente igual a la fecha efectiva local
+        let chosen: { date: string; usd: number } | undefined;
+        for (let i = entries.length - 1; i >= 0; i--) {
+            if (entries[i].date === effectiveDate) {
+                chosen = entries[i];
+                break;
+            }
+        }
+
+        // Si no hay tasa para la fecha efectiva, buscar la última anterior (para fines de semana o feriados)
+        if (!chosen) {
+            for (let i = entries.length - 1; i >= 0; i--) {
+                if (entries[i].date < effectiveDate) {
+                    chosen = entries[i];
+                    break;
+                }
+            }
+        }
+
+        // Si aún no hay ninguna, usar la más reciente disponible
+        if (!chosen) chosen = entries[entries.length - 1];
+
+        return { tasa: chosen.usd, fecha: chosen.date || "" };
     } catch (error) {
-        console.error("Error fetching exchange rate:", error);
-        return null;
+        console.error('Error fetching exchange rate history:', error);
+        return { tasa: Number(DEFAULT_RATE), fecha: "" };
     }
 };
 
-const getCurrentDateTimeVenezuela = () => {
-    const now = new Date();
-    // Venezuela is UTC-4
-    const venezuelaTime = new Date(now.getTime() - (4 * 60 * 60 * 1000));
-    const date = venezuelaTime.toISOString().split('T')[0]; // YYYY-MM-DD
-    const day = venezuelaTime.getUTCDay(); // 0=Sunday, 1=Monday, etc.
-    const hour = venezuelaTime.getUTCHours();
-    return { date, day, hour };
+
+// Helper robusto con luxon: obtener fecha/hora en la zona de Venezuela (America/Caracas)
+const getVenezuelaNow = () => {
+    const venezuelaNow = DateTime.now().setZone("America/Caracas");
+    const date = venezuelaNow.toISODate() || ""; // YYYY-MM-DD
+    const day = venezuelaNow.weekday % 7; // luxon: 1=Monday, 7=Sunday → JS: 0=Sunday, 1=Monday...
+    const hour = venezuelaNow.hour;
+    return { date, day, hour, venezuelaNow };
 };
 
 const getCurrentDateVenezuela = (): string => {
-    return getCurrentDateTimeVenezuela().date;
+    return getVenezuelaNow().date || "";
+};
+
+// Determina si la fecha publicada por la API (apiFecha) es aceptable para la fecha efectiva (effectiveDate)
+// Aceptamos la tasa si apiFecha <= effectiveDate
+const isApiFechaAcceptable = (apiFecha: string, effectiveDate: string) => {
+    if (!apiFecha) return false;
+    // Formato YYYY-MM-DD -> comparación lexicográfica válida
+    return apiFecha <= effectiveDate;
 };
 
 const shouldUpdateRate = (day: number, hour: number): boolean => {
@@ -105,34 +165,97 @@ export function CalculatorScreen() {
                 let savedRate = localStorage.getItem(LOCAL_STORAGE_RATE_KEY);
                 let savedDate = localStorage.getItem(LOCAL_STORAGE_RATE_DATE_KEY);
 
-                // Initialize with default rate if none exists
-                if (!savedRate) {
-                    localStorage.setItem(LOCAL_STORAGE_RATE_KEY, DEFAULT_RATE);
-                    localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, DEFAULT_RATE_DATE);
-                    savedRate = DEFAULT_RATE;
-                    savedDate = DEFAULT_RATE_DATE;
-                }
+                const { date: currentDate, day: currentDay, hour: currentHour } = getVenezuelaNow();
 
-                const { date: currentDate, day: currentDay, hour: currentHour } = getCurrentDateTimeVenezuela();
+                // If there's no saved rate (cold start), try to fetch from the historical API first
+                if (!savedRate) {
+                    const dataOnColdStart = await fetchExchangeRate();
+                    if (dataOnColdStart && isApiFechaAcceptable(dataOnColdStart.fecha, currentDate)) {
+                        const rate = new Big(dataOnColdStart.tasa);
+                        setPersistedRate(rate);
+                        setRateInput(rate.toString());
+                        setRateDate(dataOnColdStart.fecha);
+                        localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                        localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, dataOnColdStart.fecha);
+                        savedRate = rate.toString();
+                        savedDate = dataOnColdStart.fecha;
+                    } else if (dataOnColdStart && !isApiFechaAcceptable(dataOnColdStart.fecha, currentDate)) {
+                        // API returned a rate but for a future date -> do not accept; fallback to default without date
+                        const rate = new Big(DEFAULT_RATE);
+                        setPersistedRate(rate);
+                        setRateInput(rate.toString());
+                        setRateDate("");
+                        localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                        savedRate = rate.toString();
+                        savedDate = "";
+                        toast({
+                            title: "Actualización diferida",
+                            description: "La API publicó una tasa para un día futuro; usando tasa por defecto hasta la medianoche.",
+                            variant: "destructive",
+                        });
+                    } else {
+                        // Fetch failed -> fallback to default without date
+                        const rate = new Big(DEFAULT_RATE);
+                        setPersistedRate(rate);
+                        setRateInput(rate.toString());
+                        setRateDate("");
+                        localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                        savedRate = rate.toString();
+                        savedDate = "";
+                        toast({
+                            title: "Error de conexión",
+                            description: "No se pudo obtener la tasa en el primer arranque. Se usará la tasa por defecto.",
+                            variant: "destructive",
+                        });
+                    }
+                }
 
                 if (savedRate && savedDate === currentDate) {
                     const rate = new Big(savedRate);
                     if (rate.gt(0)) {
                         setPersistedRate(rate);
                         setRateInput(rate.toString());
-                        setRateDate(savedDate);
+                        setRateDate(savedDate || "");
                     }
                 } else {
                     // Check if should update
                     if (shouldUpdateRate(currentDay, currentHour)) {
                         const data = await fetchExchangeRate();
                         if (data) {
-                            const rate = new Big(data.tasa);
-                            setPersistedRate(rate);
-                            setRateInput(rate.toString());
-                            setRateDate(currentDate);
-                            localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
-                            localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, currentDate);
+                            // Aceptar la tasa solo si la fecha publicada por la API es <= fecha efectiva en Venezuela
+                            if (isApiFechaAcceptable(data.fecha, currentDate)) {
+                                const rate = new Big(data.tasa);
+                                setPersistedRate(rate);
+                                setRateInput(rate.toString());
+                                setRateDate(data.fecha);
+                                localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                                localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, data.fecha);
+                            } else {
+                                // API ya publicó la tasa del siguiente día: no sobreescribimos
+                                if (savedRate) {
+                                    const rate = new Big(savedRate);
+                                    setPersistedRate(rate);
+                                    setRateInput(rate.toString());
+                                    setRateDate(savedDate || "");
+                                    toast({
+                                        title: "Actualización diferida",
+                                        description: "La API ya publicó la tasa del siguiente día; usando la tasa vigente hasta la medianoche.",
+                                        variant: "destructive",
+                                    });
+                                    } else {
+                                    // No hay tasa guardada, fallback controlado a DEFAULT (sin fecha)
+                                    const rate = new Big(DEFAULT_RATE);
+                                    setPersistedRate(rate);
+                                    setRateInput(rate.toString());
+                                    setRateDate("");
+                                    localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                                    toast({
+                                        title: "Tasa por defecto",
+                                        description: "No hay tasa guardada y la API está adelantada. Se usa la tasa por defecto.",
+                                        variant: "destructive",
+                                    });
+                                }
+                            }
                         } else if (savedRate) {
                             // Fallback to saved rate if fetch fails
                             const rate = new Big(savedRate);
@@ -544,18 +667,26 @@ export function CalculatorScreen() {
     const refreshRate = async () => {
         try {
             const data = await fetchExchangeRate();
+            const { date: effectiveDate } = getVenezuelaNow();
             if (data) {
-                const rate = new Big(data.tasa);
-                setPersistedRate(rate);
-                setRateInput(rate.toString());
-                const currentDate = getCurrentDateVenezuela();
-                setRateDate(currentDate);
-                localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
-                localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, currentDate);
-                toast({
-                    title: "Tasa actualizada",
-                    description: "La tasa del dólar ha sido actualizada.",
-                });
+                if (isApiFechaAcceptable(data.fecha, effectiveDate)) {
+                    const rate = new Big(data.tasa);
+                    setPersistedRate(rate);
+                    setRateInput(rate.toString());
+                    setRateDate(data.fecha);
+                    localStorage.setItem(LOCAL_STORAGE_RATE_KEY, rate.toString());
+                    localStorage.setItem(LOCAL_STORAGE_RATE_DATE_KEY, data.fecha);
+                    toast({
+                        title: "Tasa actualizada",
+                        description: "La tasa del dólar ha sido actualizada.",
+                    });
+                } else {
+                    toast({
+                        title: "No se actualizó",
+                        description: "La API ya publicó la tasa del siguiente día; la tasa vigente se mantiene hasta la medianoche.",
+                        variant: "destructive",
+                    });
+                }
             } else {
                 toast({
                     title: "Error",
@@ -632,11 +763,21 @@ export function CalculatorScreen() {
                             </div>
                             {rateDate && (
                                 <div className="text-xs text-slate-500">
-                                    {new Date(rateDate).toLocaleDateString('es-VE', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
+                                    {/* Mostrar la fecha original en formato Venezuela */}
+                                    {(() => {
+                                        try {
+                                            // Usar luxon para mostrar en español Venezuela
+                                            const venezuelaDate = DateTime.fromISO(rateDate, { zone: 'America/Caracas' });
+                                            return venezuelaDate.setLocale('es').toLocaleString({ year: 'numeric', month: 'long', day: 'numeric' });
+                                        } catch (e) {
+                                            // Fallback si hay error
+                                            return new Date(rateDate).toLocaleDateString('es-VE', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            });
+                                        }
+                                    })()}
                                 </div>
                             )}
                         </div>
